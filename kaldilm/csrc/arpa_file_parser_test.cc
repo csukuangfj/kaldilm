@@ -1,5 +1,8 @@
 // kaldilm/csrc/arpa_file_parser_test.cc
 //
+// This file is copied/modified from
+// https://github.com/kaldi-asr/kaldi/blob/master/src/lm/arpa-file-parser-test.cc
+//
 // Copyright 2016  Smart Action Company LLC (kkm)
 //
 

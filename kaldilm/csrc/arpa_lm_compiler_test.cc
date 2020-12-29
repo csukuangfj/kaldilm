@@ -1,5 +1,8 @@
 // kaldilm/csrc/arpa_lm_compiler_test.cc
-
+//
+// This file is copied/modified from
+// https://github.com/kaldi-asr/kaldi/blob/master/src/lm/arpa-lm-compiler-test.cc
+//
 // Copyright 2009-2011 Gilles Boulianne
 // Copyright 2016 Smart Action LLC (kkm)
 

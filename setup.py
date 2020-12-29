@@ -50,7 +50,7 @@ setuptools.setup(
     version=get_package_version(),
     author='Fangjun Kuang',
     author_email='csukuangfj@gmail.com',
-    data_files=[('', ['LICENSE'])],
+    data_files=[('', ['LICENSE', 'README.md'])],
     package_dir={
         package_name: 'kaldilm/python/kaldilm',
     },

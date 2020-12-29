@@ -1,4 +1,6 @@
 // kaldilm/csrc/log.h
+//
+// Copyright (c)  2020  Xiaomi Corporation (authors: Daniel Povey)
 
 #ifndef KALDILM_CSRC_LOG_H_
 #define KALDILM_CSRC_LOG_H_

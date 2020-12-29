@@ -1,1 +1,0 @@
-// kaldilm/csrc/kaldilm.h

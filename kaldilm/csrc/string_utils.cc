@@ -1,4 +1,6 @@
 // kaldilm/csrc/string_utils.cc
+//
+// Copyright (c)  2020  Xiaomi Corporation (authors: Daniel Povey)
 
 #include "kaldilm/csrc/string_utils.h"
 
