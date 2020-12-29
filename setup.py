@@ -26,10 +26,11 @@ class BuildExtension(build_ext):
         os.makedirs(self.build_lib, exist_ok=True)
 
         subprocess.check_call(['cmake', '--S', '.', '-B', f'{build_dir}'])
-        subprocess.check_call(['cmake', '--build', f'{build_dir}'])
-        lib_so = glob.glob(f'{build_dir}/lib/kaldilm.*.so')
-        assert len(lib_so) == 1
-        shutil.copy(f'{lib_so[0]}', f'{self.build_lib}/')
+        subprocess.check_call(
+            ['cmake', '--build', f'{build_dir}', '--target', '_kaldilm'])
+        lib_so = glob.glob(f'{build_dir}/lib/*.so')
+        for so in lib_so:
+            shutil.copy(f'{so}', f'{self.build_lib}/')
 
 
 def get_package_version():
@@ -50,6 +51,10 @@ setuptools.setup(
     author='Fangjun Kuang',
     author_email='csukuangfj@gmail.com',
     data_files=[('', ['LICENSE'])],
+    package_dir={
+        package_name: 'kaldilm/python/kaldilm',
+    },
+    packages=[package_name],
     url='https://github.com/csukuangfj/kaldilm',
     ext_modules=[cmake_extension(package_name)],
     cmdclass={"build_ext": BuildExtension},

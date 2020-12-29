@@ -75,11 +75,10 @@ class Voidifier {
 #define KALDILM_ERR \
   kaldilm::Logger(__FILE__, KALDILM_FUNC, __LINE__, kaldilm::LogLevel::kError)
 
-#define KALDILM_ASSERT(x, y)                                             \
-  ((x) == (y)) ? (void)0                                                 \
-               : kaldilm::Voidifier() & KALDILM_ERR << "Check failed!\n" \
-                                                    << "x: " << #x       \
-                                                    << ", y: " << #y
+#define KALDILM_ASSERT(x)                                       \
+  (x) ? (void)0                                                 \
+      : kaldilm::Voidifier() & KALDILM_ERR << "Check failed!\n" \
+                                           << "x: " << #x
 
 }  // namespace kaldilm
 

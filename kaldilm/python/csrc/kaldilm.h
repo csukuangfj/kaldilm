@@ -6,5 +6,6 @@
 #define KALDILM_PYTHON_CSRC_KALDILM_H_
 
 #include "pybind11/pybind11.h"
+namespace py = pybind11;
 
-#endif // KALDILM_PYTHON_CSRC_KALDILM_H_
+#endif  // KALDILM_PYTHON_CSRC_KALDILM_H_
