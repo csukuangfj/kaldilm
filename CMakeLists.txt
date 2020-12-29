@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 project(kaldilm)
 
-set(kaldilm_VERSION "0.1")
+set(kaldilm_VERSION "0.2")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
