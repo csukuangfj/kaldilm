@@ -2,7 +2,7 @@
 
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
-project(kaldilm)
+project(kaldilm CXX)
 
 set(kaldilm_VERSION "0.1")
 
@@ -15,8 +15,17 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_STANDARD 11 CACHE STRING "The C++ version to be used.")
+set(CMAKE_CXX_STANDARD 14 CACHE STRING "The C++ version to be used.")
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-std=c++14" KALDILM_COMPILER_SUPPORTS_CXX14)
+if(NOT KALDILM_COMPILER_SUPPORTS_CXX14)
+  message(FATAL_ERROR "
+    kaldilm requires a compiler supporting at least C++14.
+    If you are using GCC, please upgrade it to at least version 5.0.
+    If you are using Clang, please upgrade it to at least version 3.4.")
+endif()
 
 message(STATUS "C++ Standard version: ${CMAKE_CXX_STANDARD}")
 
