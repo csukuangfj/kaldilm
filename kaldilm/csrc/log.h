@@ -19,6 +19,7 @@ class Logger {
         func_name_(func_name),
         line_num_(line_num),
         level_(level) {
+    os_ << filename << ":" << func_name << ":" << line_num << "\n";
     switch (level_) {
       case LogLevel::kInfo:
         os_ << "[I] ";
@@ -39,7 +40,7 @@ class Logger {
   }
 
   ~Logger() {
-    std::cerr << os_.str();
+    std::cerr << os_.str() << "\n";
     if (level_ == LogLevel::kError) abort();
   }
 
@@ -49,6 +50,11 @@ class Logger {
   const char *func_name_;
   uint32_t line_num_;
   LogLevel level_;
+};
+
+class Voidifier {
+ public:
+  void operator&(const Logger &)const {}
 };
 
 #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__) || \
@@ -68,6 +74,12 @@ class Logger {
 
 #define KALDILM_ERR \
   kaldilm::Logger(__FILE__, KALDILM_FUNC, __LINE__, kaldilm::LogLevel::kError)
+
+#define KALDILM_ASSERT(x, y)                                             \
+  ((x) == (y)) ? (void)0                                                 \
+               : kaldilm::Voidifier() & KALDILM_ERR << "Check failed!\n" \
+                                                    << "x: " << #x       \
+                                                    << ", y: " << #y
 
 }  // namespace kaldilm
 

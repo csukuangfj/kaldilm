@@ -10,7 +10,6 @@
 #define KALDILM_CSRC_ARPA_FILE_PARSER_H_
 
 #include <cstdint>
-#include <iostream>
 #include <sstream>
 
 #include "fst/symbol-table.h"
