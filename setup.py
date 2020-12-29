@@ -28,7 +28,7 @@ class BuildExtension(build_ext):
         os.makedirs(self.build_lib, exist_ok=True)
 
         os.system(f'cd {build_dir}; cmake {cur_dir}; make -j _kaldilm')
-        lib_so = glob.glob(f'{build_dir}/lib/*.so')
+        lib_so = glob.glob(f'{build_dir}/lib/*.so*')
         for so in lib_so:
             shutil.copy(f'{so}', f'{self.build_lib}/')
 

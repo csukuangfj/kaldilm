@@ -1,6 +1,6 @@
 // kaldilm/python/csrc/kaldilm.cc
 //
-// Copyright (c)  2020  Xiaomi Corporation (authors: Daniel Povey)
+// Copyright (c)  2020  Xiaomi Corporation (authors: Fangjun Kuang)
 
 #include "kaldilm/python/csrc/kaldilm.h"
 

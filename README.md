@@ -3,6 +3,8 @@
 
 Python wrapper for kaldi's [arpa2fst][1].
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)][3]
+
 # Installation
 
 To install `kaldilm`, please run:
@@ -186,5 +188,6 @@ b	4
 7       6       4       0.804937661
 ```
 
+[3]: https://colab.research.google.com/drive/1rTGQiDDlhE8ezTH4kmR4m8vlvs6lnl6Z?usp=sharing
 [2]: https://github.com/csukuangfj/kaldilm/blob/master/kaldilm/python/kaldilm/arpa2fst.py#L6
 [1]: https://github.com/kaldi-asr/kaldi/blob/master/src/lmbin/arpa2fst.cc
