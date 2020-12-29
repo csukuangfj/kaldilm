@@ -22,12 +22,12 @@ def cmake_extension(name, *args, **kwargs) -> setuptools.Extension:
 
 class BuildExtension(build_ext):
     def build_extension(self, ext: setuptools.extension.Extension):
-        build_dir = f'{cur_dir}/build'
+        build_dir = self.build_temp
         os.makedirs(build_dir, exist_ok=True)
 
         os.makedirs(self.build_lib, exist_ok=True)
 
-        os.system(f'cd {build_dir}; cmake ..; make -j _kaldilm')
+        os.system(f'cd {build_dir}; cmake {cur_dir}; make -j _kaldilm')
         lib_so = glob.glob(f'{build_dir}/lib/*.so')
         for so in lib_so:
             shutil.copy(f'{so}', f'{self.build_lib}/')
@@ -64,7 +64,7 @@ setuptools.setup(
     url='https://github.com/csukuangfj/kaldilm',
     long_description=read_long_description(),
     long_description_content_type='text/markdown',
-    ext_modules=[cmake_extension(package_name)],
+    ext_modules=[cmake_extension('_kaldilm')],
     cmdclass={'build_ext': BuildExtension},
     zip_safe=False,
     classifiers=[

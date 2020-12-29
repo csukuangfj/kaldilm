@@ -5,32 +5,14 @@ Python wrapper for kaldi's [arpa2fst][1].
 
 # Installation
 
-## Build from source
-
-The build system uses CMake. CMake 3.18 is known to work.
-Other versions may also work but they are not tested.
-
-Please create an issue [on GitHub](https://github.com/csukuangfj/kaldilm/issues/new)
-if you encounter any problems while building `kaldilm`.
-
-You can build `kaldilm` with the following commands:
-
-```bash
-git clone https://github.com/csukuangfj/kaldilm
-cd kaldilm
-python setup.py install
-```
-
-## Install with pip
-
-Currently, we only upload packages for Python 3.6, 3.7 and 3.8 to PyPI.
-If you use a different Python version, please install `kalidlm` from source.
-
-To install `kaldilm` from PyPi, please run:
+To install `kaldilm`, please run:
 
 ```bash
 pip install kaldilm
 ```
+
+Please create an issue [on GitHub](https://github.com/csukuangfj/kaldilm/issues/new)
+if you encounter any problems while installing `kaldilm`.
 
 # Usage
 

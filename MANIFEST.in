@@ -1,2 +1,3 @@
 include CMakeLists.txt
-recursive-include kaldilm/ CMakeLists.txt
+recursive-include kaldilm *.*
+recursive-include cmake *.*
