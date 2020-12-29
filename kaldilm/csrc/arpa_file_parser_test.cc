@@ -146,11 +146,6 @@ void TestableArpaFileParser::Validate(
                     expect_counts.array));
 
   assert(ngrams_.size() == expect_ngrams.count);
-  // auto mpos = std::mismatch(ngrams_.begin(), ngrams_.end(),
-  //                           expect_ngrams.array, CompareNgrams);
-  // if (mpos.first != ngrams_.end())
-  //   KALDILM_ERR << "Maismatch at index " << mpos.first - ngrams_.begin();
-  // TODO: auto above requres C++11, and I cannot spell out the type!!!
   assert(std::equal(ngrams_.begin(), ngrams_.end(), expect_ngrams.array,
                     CompareNgrams));
 }
