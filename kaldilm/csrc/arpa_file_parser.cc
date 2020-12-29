@@ -18,7 +18,7 @@
 namespace kaldilm {
 
 ArpaFileParser::ArpaFileParser(const ArpaParseOptions &options,
-                               SymbolTable *symbols)
+                               fst::SymbolTable *symbols)
     : options_(options),
       symbols_(symbols),
       line_number_(0),

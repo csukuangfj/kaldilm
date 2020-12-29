@@ -13,7 +13,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "kaldilm/csrc/symbol_table.h"
+#include "fst/symbol-table.h"
 
 namespace kaldilm {
 
@@ -70,7 +70,7 @@ class ArpaFileParser {
   /// If symbol table is a null pointer, the file should contain integer
   /// symbol values, and oov_handling has no effect. bos_symbol and eos_symbol
   /// must be valid symbols still.
-  ArpaFileParser(const ArpaParseOptions &options, SymbolTable *symbols);
+  ArpaFileParser(const ArpaParseOptions &options, fst::SymbolTable *symbols);
   virtual ~ArpaFileParser() = default;
 
   /// Read ARPA LM file from a stream.
@@ -97,7 +97,7 @@ class ArpaFileParser {
   virtual void ReadComplete() {}
 
   /// Read-only access to symbol table. Not owned, do not make public.
-  const SymbolTable *Symbols() const { return symbols_; }
+  const fst::SymbolTable *Symbols() const { return symbols_; }
 
   /// Inside ConsumeNGram(), provides the current line number.
   int32_t LineNumber() const { return line_number_; }
@@ -115,7 +115,7 @@ class ArpaFileParser {
 
  private:
   ArpaParseOptions options_;
-  SymbolTable *symbols_;  // the pointer is not owned here.
+  fst::SymbolTable *symbols_;  // the pointer is not owned here.
   int32_t line_number_;
   uint32_t warning_count_;
   std::string current_line_;

@@ -2,7 +2,7 @@
 
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
-project(kaldilm CXX)
+project(kaldilm)
 
 set(kaldilm_VERSION "0.1")
 
@@ -32,6 +32,7 @@ message(STATUS "C++ Standard version: ${CMAKE_CXX_STANDARD}")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(pybind11)
+include(openfst)
 
 include_directories(${CMAKE_SOURCE_DIR})
 add_subdirectory(kaldilm)
