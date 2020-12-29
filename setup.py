@@ -11,6 +11,8 @@ import subprocess
 
 from setuptools.command.build_ext import build_ext
 
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+
 
 def cmake_extension(name, *args, **kwargs) -> setuptools.Extension:
     kwargs['language'] = 'c++'
@@ -20,17 +22,21 @@ def cmake_extension(name, *args, **kwargs) -> setuptools.Extension:
 
 class BuildExtension(build_ext):
     def build_extension(self, ext: setuptools.extension.Extension):
-        build_dir = 'build'
+        build_dir = f'{cur_dir}/build'
         os.makedirs(build_dir, exist_ok=True)
 
         os.makedirs(self.build_lib, exist_ok=True)
 
-        subprocess.check_call(['cmake', '--S', '.', '-B', f'{build_dir}'])
-        subprocess.check_call(
-            ['cmake', '--build', f'{build_dir}', '--target', '_kaldilm'])
+        os.system(f'cd {build_dir}; cmake ..; make -j _kaldilm')
         lib_so = glob.glob(f'{build_dir}/lib/*.so')
         for so in lib_so:
             shutil.copy(f'{so}', f'{self.build_lib}/')
+
+
+def read_long_description():
+    with open('README.md', encoding='utf8') as f:
+        readme = f.read()
+    return readme
 
 
 def get_package_version():
@@ -56,7 +62,15 @@ setuptools.setup(
     },
     packages=[package_name],
     url='https://github.com/csukuangfj/kaldilm',
+    long_description=read_long_description(),
+    long_description_content_type='text/markdown',
     ext_modules=[cmake_extension(package_name)],
-    cmdclass={"build_ext": BuildExtension},
+    cmdclass={'build_ext': BuildExtension},
     zip_safe=False,
+    classifiers=[
+        'Programming Language :: C++',
+        'Programming Language :: Python',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+    ],
+    license='Apache licensed, as found in the LICENSE file',
 )
