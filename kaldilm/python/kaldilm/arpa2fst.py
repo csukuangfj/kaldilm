@@ -16,7 +16,7 @@ def arpa2fst(input_arpa: str,
     '''Convert an ARPA file to an FST.
 
     This function is a wrapper of kaldi's arpa2fst and
-    arguments names meanings are not changed.
+    all the arguments have the same meaning with their counterparts in kaldi.
 
     Args:
       The input arpa file.
