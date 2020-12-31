@@ -120,27 +120,7 @@ ngram 3=2
 \end\
 ```
 
-You can use the following code to convert it to an FSA:
-
-```python
-input_file = './input.arpa'
-
-import kaldilm
-
-s = kaldilm.arpa2fst(input_file, 'a.fst', write_symbol_table='words.txt')
-with open('a.fst.txt', 'w') as f:
-    f.write(s)
-```
-
-It generates 3 files:
-
-- `a.fst` (a binary file in OpenFST format)
-- `words.txt` (symbol table of `a.fst` in text format)
-- `a.fst.txt` (a text format of `a.fst` with integer labels)`
-
-Their contents are shown below:
-
-### cat words.txt
+and the word symbol table is `words.txt`:
 
 ```
 <eps>	0
@@ -148,44 +128,63 @@ Their contents are shown below:
 </s>	2
 a	3
 b	4
+#0 5
 ```
+
+You can use the following code to convert it into an FST:
+
+```python
+#!/usr/bin/env python3
+
+filename = './input.arpa'
+
+import kaldilm
+
+s = kaldilm.arpa2fst(filename,
+                     'a.fst',
+                     read_symbol_table='words.txt',
+                     disambig_symbol='#0')
+with open('a.fst.txt', 'w') as f:
+    f.write(s)
+```
+
+It generates 2 files:
+
+- `a.fst` (a binary file in OpenFST format)
+- `a.fst.txt` (a text format of `a.fst` with integer labels)`
+
+Their contents are shown below:
 
 ### cat a.fst.txt
 
 ```
-5	4	1	0
-0	1	2	9.97787
-0	2	3	12.0533
-0	3	4	7.95954
-1	0
-2	0	0	7.59853
-2	6	4	3.35436
-3	0	0	-0
-4	0	0	5.75646
-4	7	3	3.00464
-6	3	0	7.43735
-6	1	2	0.551239
-7	2	0	9.67086
-7	6	4	0.804938
+2	4	3	3	3.00464
+2	0	5	0	5.75646
+0	1	3	3	12.0533
+0	0	4	4	7.95954
+0	9.97787
+1	3	4	4	3.35436
+1	0	5	0	7.59853
+3	0	5	0	7.43735
+3	0.551239
+4	3	4	4	0.804938
+4	1	5	0	9.67086
 ```
 
-### fstprint --acceptor a.fst
+### fstprint a.fst
 
 ```
-5       4       1
-0       1       2       9.97786808
-0       2       3       12.0532942
-0       3       4       7.95953703
-1
-2       0       0       7.59853077
-2       6       4       3.35435987
-3       0       0
-4       0       0       5.75646257
-4       7       3       3.00464344
-6       3       0       7.4373498
-6       1       2       0.551238894
-7       2       0       9.67085648
-7       6       4       0.804937661
+2       4       3       3       3.00464344
+2       0       5       0       5.75646257
+0       1       3       3       12.0532942
+0       0       4       4       7.95953703
+0       9.97786808
+1       3       4       4       3.35435987
+1       0       5       0       7.59853077
+3       0       5       0       7.4373498
+3       0.551238894
+4       3       4       4       0.804937661
+4       1       5       0       9.67085648
 ```
 
 [3]: https://colab.research.google.com/drive/1rTGQiDDlhE8ezTH4kmR4m8vlvs6lnl6Z?usp=sharing

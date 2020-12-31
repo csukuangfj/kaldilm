@@ -25,7 +25,7 @@ static void PrintFstInTextFormat(std::ostream &os,
   // newline to start the FST; in a table, the first line of the FST will
   // appear on its own line.
   os << '\n';
-  bool acceptor = true, write_one = true;
+  bool acceptor = false, write_one = false;
   // fst::FstPrinter<Arc> printer(t, t.InputSymbols(), t.OutputSymbols(), NULL,
   //                              acceptor, write_one, "\t");
 
