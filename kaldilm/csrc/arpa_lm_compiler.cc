@@ -381,7 +381,7 @@ void ArpaLmCompiler::Check() const {
 void ArpaLmCompiler::ReadComplete() {
   fst_.SetInputSymbols(Symbols());
   fst_.SetOutputSymbols(Symbols());
-  RemoveRedundantStates();
+  // RemoveRedundantStates();
   Check();
 }
 
