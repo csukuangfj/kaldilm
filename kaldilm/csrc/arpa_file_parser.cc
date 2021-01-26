@@ -117,6 +117,12 @@ void ArpaFileParser::Read(std::istream &is) {
   NGram ngram;
   ngram.words.reserve(ngram_counts_.size());
 
+  if (options_.max_order == -1) {
+    options_.max_order = ngram_counts_.size();
+  }
+
+  KALDILM_ASSERT(options_.max_order >= 1);
+
   // Processes "\N-grams:" section.
   for (int32_t cur_order = 1; cur_order <= ngram_counts_.size(); ++cur_order) {
     // Skips n-grams with zero count.
@@ -185,6 +191,10 @@ void ArpaFileParser::Read(std::istream &is) {
 
       ngram.words.resize(cur_order);
       bool skip_ngram = false;
+      if (cur_order > options_.max_order) {
+        skip_ngram = true;
+      }
+
       for (int32_t index = 0; !skip_ngram && index < cur_order; ++index) {
         int32_t word;
         if (symbols_) {

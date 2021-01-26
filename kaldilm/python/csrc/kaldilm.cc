@@ -43,15 +43,17 @@ static void PrintFstInTextFormat(std::ostream &os,
 }
 
 std::string Arpa2Fst(const std::string &input_arpa,
-                     const std::string &output_fst,
+                     const std::string &output_fst = "",
                      const std::string bos_symbol = "<s>",
                      const std::string &disambig_symbol = "",
                      const std::string &eos_symbol = "</s>",
                      bool ilabel_sort = true, bool keep_symbols = false,
                      int32_t max_arpa_warnings = 30,
                      const std::string &read_symbol_table = "",
-                     const std::string &write_symbol_table = "") {
+                     const std::string &write_symbol_table = "",
+                     int32_t max_order = -1) {
   ArpaParseOptions options;
+  options.max_order = max_order;
   options.max_warnings = max_arpa_warnings;
 
   std::string read_syms_filename = read_symbol_table;
@@ -117,10 +119,12 @@ std::string Arpa2Fst(const std::string &input_arpa,
   }
 
   // Write LM FST.
-  std::ofstream kofst(fst_wxfilename, std::ios::binary);
-  fst::FstWriteOptions wopts(fst_wxfilename);
-  wopts.write_isymbols = wopts.write_osymbols = keep_symbols;
-  lm_compiler.Fst().Write(kofst, wopts);
+  if (fst_wxfilename.size() > 0) {
+    std::ofstream kofst(fst_wxfilename, std::ios::binary);
+    fst::FstWriteOptions wopts(fst_wxfilename);
+    wopts.write_isymbols = wopts.write_osymbols = keep_symbols;
+    lm_compiler.Fst().Write(kofst, wopts);
+  }
 
   delete symbols;
 
@@ -134,9 +138,9 @@ std::string Arpa2Fst(const std::string &input_arpa,
 PYBIND11_MODULE(_kaldilm, m) {
   m.doc() = "Python wrapper for kaldilm";
   m.def("arpa2fst", &kaldilm::Arpa2Fst, py::arg("input_arpa"),
-        py::arg("output_fst"), py::arg("bos_symbol") = "<s>",
+        py::arg("output_fst") = "", py::arg("bos_symbol") = "<s>",
         py::arg("disambig_symbol") = "", py::arg("eos_symbol") = "</s>",
         py::arg("ilabel_sort") = true, py::arg("keep_symbols") = false,
         py::arg("max_arpa_warnings") = 30, py::arg("read_symbol_table") = "",
-        py::arg("write_symbol_table") = "");
+        py::arg("write_symbol_table") = "", py::arg("max_order") = -1);
 }

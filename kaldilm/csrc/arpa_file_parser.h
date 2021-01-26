@@ -41,6 +41,11 @@ struct ArpaParseOptions {
 
   /// Maximum warnings to report, <0 unlimited.
   int32_t max_warnings = 30;
+
+  // Maximum LM order. -1 means to use the largest order in the file.
+  // If max_order is 1, it consumes ngram data up to unigram
+  // If max_order is 2, it consumes ngram data up to bigram
+  int32_t max_order = -1;
 };
 
 /**
