@@ -186,7 +186,6 @@ G.draw('G.svg')
 `G.svg` is shown below:
 
 ![G.svg](./G.svg)
-<img src="./G.svg">
 
 ### 1-gram
 
@@ -227,9 +226,14 @@ G.draw('G_uni.svg')
 `G_uni.svg` is shown below:
 
 ![G_uni.svg](./G_uni.svg)
-<img src="./G_uni.svg">
+
+## What's more
+
+Please refer to <https://github.com/k2-fsa/snowfall/blob/master/egs/librispeech/asr/simple_v1/run.sh>
+for how `kaldilm` is used in [snowfall][4].
 
 
+[4]: https://github.com/k2-fsa/snowfall/
 [3]: https://github.com/k2-fsa/k2
 [2]: https://colab.research.google.com/drive/1rTGQiDDlhE8ezTH4kmR4m8vlvs6lnl6Z?usp=sharing
 [1]: https://github.com/kaldi-asr/kaldi/blob/master/src/lmbin/arpa2fst.cc
