@@ -3,11 +3,11 @@
 
 Python wrapper for kaldi's [arpa2fst][1].
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)][3]
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)][2]
 
 # Installation
 
-To install `kaldilm`, please run:
+`kaldilm` can be installed by
 
 ```bash
 pip install kaldilm
@@ -44,54 +44,64 @@ Options:
   --write-symbol-table        : Write generated symbol table to a file (string, default = "")
 ```
 
-`kaldilm` reuses the same arguments and provides only a single method [arpa2fst][2]:
+`kaldilm` uses the same arguments as kaldi's arpa2fst:
 
-```python
-def arpa2fst(input_arpa: str,
-             output_fst: str,
-             bos_symbol: str = '<s>',
-             disambig_symbol: str = '',
-             eos_symbol: str = '</s>',
-             ilabel_sort: bool = True,
-             keep_symbols: bool = False,
-             max_arpa_warnings: int = 30,
-             read_symbol_table: str = '',
-             write_symbol_table: str = '') -> str:
-    '''Convert an ARPA file to an FST.
-
-    This function is a wrapper of kaldi's arpa2fst and
-    all the arguments have the same meaning with their counterparts in kaldi.
-
-    Args:
-      The input arpa file.
-    output_fst:
-      The output fst file. Note that it is a binary file.
-      This function will return a text format of it.
-    bos_symbol:
-      Beginning of sentence symbol.
-    disambig_symbol:
-      Disambiguator. If provided (e.g., #0), used on input side of backoff
-      links, and <s> and </s> are replaced with epsilons.
-    eos_symbol:
-      End of sentence symbol.
-    ilabel_sort:
-      Ilabel-sort the output FST.
-    keep_symbols:
-      Store symbol table with FST. Symbols always saved to FST if symbol
-      tables are neither read or written (otherwise symbols would be lost
-      entirely).
-    max_arpa_warnings:
-      Maximum warnings to report on ARPA parsing, 0 to disable, -1 to
-      show all.
-    read_symbol_table:
-      use existing symbol table.
-    write_symbol_table:
-      Write generated symbol table to a file.
-
-    Returns:
-      Return a text format of the resulting FST with integer labels.
-    '''
+```bash
+$ python3 -m kaldilm --help
 ```
+
+prints
+
+```
+usage: Python wrapper of kaldi's arpa2fst [-h] [--bos-symbol BOS_SYMBOL]
+                                          [--disambig-symbol DISAMBIG_SYMBOL]
+                                          [--eos-symbol EOS_SYMBOL]
+                                          [--ilabel-sort ILABEL_SORT]
+                                          [--keep-symbols KEEP_SYMBOLS]
+                                          [--max-arpa-warnings MAX_ARPA_WARNINGS]
+                                          [--read-symbol-table READ_SYMBOL_TABLE]
+                                          [--write-symbol-table WRITE_SYMBOL_TABLE]
+                                          [--max-order MAX_ORDER]
+                                          input_arpa [output_fst]
+
+positional arguments:
+  input_arpa            input arpa filename
+  output_fst            Output fst filename. If empty, no output file is
+                        created.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --bos-symbol BOS_SYMBOL
+                        Beginning of sentence symbol (default = "<s>")
+  --disambig-symbol DISAMBIG_SYMBOL
+                        Disambiguator. If provided (e.g., #0), used on input
+                        side of backoff links, and <s> and </s> are replaced
+                        with epsilons (default = "")
+  --eos-symbol EOS_SYMBOL
+                        End of sentence symbol (default = "</s>")
+  --ilabel-sort ILABEL_SORT
+                        Ilabel-sort the output FST (default = true)
+  --keep-symbols KEEP_SYMBOLS
+                        Store symbol table with FST. Symbols always saved to
+                        FST if symboltables are neither read or written
+                        (otherwise symbols would be lost entirely) (default =
+                        false)
+  --max-arpa-warnings MAX_ARPA_WARNINGS
+                        Maximum warnings to report on ARPA parsing, 0 to
+                        disable, -1 to show all (default = 30)
+  --read-symbol-table READ_SYMBOL_TABLE
+                        Use existing symbol table (default = "")
+  --write-symbol-table WRITE_SYMBOL_TABLE
+                        (Write generated symbol table to a file (default = "")
+  --max-order MAX_ORDER
+                        Maximum order (inclusive) in the arpa file is used to
+                        generate the final FST. If it is -1, all ngram data in
+                        the file are used.If it is 1, only unigram data are
+                        used.If it is 2, only ngram data up to bigram are
+                        used.Default is -1.
+```
+
+It has one extra argument `--max-order`, which is not present in kaldi's arpa2fst.
 
 ## Example usage
 
@@ -131,62 +141,95 @@ b	4
 #0 5
 ```
 
-You can use the following code to convert it into an FST:
+You can use the following code to convert it into an FST.
+
+### 3-gram
+
+This uses all n-gram data inside the arpa file.
+
+```
+  python3 -m kaldilm \
+    --read-symbol-table="./words.txt" \
+    --disambig-symbol='#0' \
+    ./input.arpa > G_fst.txt
+```
+
+The resulting `G_fst.txt` is shown in the following
+
+```
+3	5	3	3	3.00464
+3	0	5	0	5.75646
+0	1	3	3	12.0533
+0	2	4	4	7.95954
+0	9.97787
+1	4	4	4	3.35436
+1	0	5	0	7.59853
+2	0	5	0
+4	2	5	0	7.43735
+4	0.551239
+5	4	4	4	0.804938
+5	1	5	0	9.67086
+```
+
+which can be visualized in [k2][3] using
 
 ```python
-#!/usr/bin/env python3
-
-filename = './input.arpa'
-
-import kaldilm
-
-s = kaldilm.arpa2fst(filename,
-                     'a.fst',
-                     read_symbol_table='words.txt',
-                     disambig_symbol='#0')
-with open('a.fst.txt', 'w') as f:
-    f.write(s)
+import k2
+with open('G_fst.txt') as f:
+  G = k2.Fsa.from_openfst(f.read(), acceptor=False)
+G.symbols = k2.SymbolTable.from_file('words.txt')
+G.aux_symbols = k2.SymbolTable.from_file('words.txt')
+# G.labels[G.labels == 5] = 0 # convert #0 to eps
+G.draw('G.svg')
 ```
 
-It generates 2 files:
+`G.svg` is shown below:
 
-- `a.fst` (a binary file in OpenFST format)
-- `a.fst.txt` (a text format of `a.fst` with integer labels)`
+![G.svg](./G.svg)
+<img src="./G.svg">
 
-Their contents are shown below:
+### 1-gram
 
-### cat a.fst.txt
+It uses only uni-gram data inside the arpa file
+since `--max-order=1` is used.
 
 ```
-2	4	3	3	3.00464
-2	0	5	0	5.75646
+  python3 -m kaldilm \
+    --read-symbol-table="./words.txt" \
+    --disambig-symbol='#0' \
+    --max-order=1 \
+    ./input.arpa > G_uni_fst.txt
+```
+
+The generated `G_uni_fst.txt` is
+
+```
+3	0	5	0	5.75646
 0	1	3	3	12.0533
-0	0	4	4	7.95954
+0	2	4	4	7.95954
 0	9.97787
-1	3	4	4	3.35436
 1	0	5	0	7.59853
-3	0	5	0	7.43735
-3	0.551239
-4	3	4	4	0.804938
-4	1	5	0	9.67086
+2	0	5	0
 ```
 
-### fstprint a.fst
+which can be visualized in [k2][3] using
 
-```
-2       4       3       3       3.00464344
-2       0       5       0       5.75646257
-0       1       3       3       12.0532942
-0       0       4       4       7.95953703
-0       9.97786808
-1       3       4       4       3.35435987
-1       0       5       0       7.59853077
-3       0       5       0       7.4373498
-3       0.551238894
-4       3       4       4       0.804937661
-4       1       5       0       9.67085648
+```python
+import k2
+with open('G_uni_fst.txt') as f:
+  G = k2.Fsa.from_openfst(f.read(), acceptor=False)
+G.symbols = k2.SymbolTable.from_file('words.txt')
+G.aux_symbols = k2.SymbolTable.from_file('words.txt')
+# G.labels[G.labels == 5] = 0 # convert #0 to eps
+G.draw('G_uni.svg')
 ```
 
-[3]: https://colab.research.google.com/drive/1rTGQiDDlhE8ezTH4kmR4m8vlvs6lnl6Z?usp=sharing
-[2]: https://github.com/csukuangfj/kaldilm/blob/master/kaldilm/python/kaldilm/arpa2fst.py#L6
+`G_uni.svg` is shown below:
+
+![G_uni.svg](./G_uni.svg)
+<img src="./G_uni.svg">
+
+
+[3]: https://github.com/k2-fsa/k2
+[2]: https://colab.research.google.com/drive/1rTGQiDDlhE8ezTH4kmR4m8vlvs6lnl6Z?usp=sharing
 [1]: https://github.com/kaldi-asr/kaldi/blob/master/src/lmbin/arpa2fst.cc
