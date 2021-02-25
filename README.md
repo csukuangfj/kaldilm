@@ -180,7 +180,7 @@ with open('G_fst.txt') as f:
 G.symbols = k2.SymbolTable.from_file('words.txt')
 G.aux_symbols = k2.SymbolTable.from_file('words.txt')
 # G.labels[G.labels == 5] = 0 # convert #0 to eps
-G.draw('G.svg')
+G.draw('G.svg', title='G')
 ```
 
 `G.svg` is shown below:
@@ -220,7 +220,7 @@ with open('G_uni_fst.txt') as f:
 G.symbols = k2.SymbolTable.from_file('words.txt')
 G.aux_symbols = k2.SymbolTable.from_file('words.txt')
 # G.labels[G.labels == 5] = 0 # convert #0 to eps
-G.draw('G_uni.svg')
+G.draw('G_uni.svg', title='G_uni')
 ```
 
 `G_uni.svg` is shown below:
