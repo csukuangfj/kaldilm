@@ -13,6 +13,14 @@ Python wrapper for kaldi's [arpa2fst][1].
 pip install kaldilm
 ```
 
+In case it doesn't work (you can't import `_kaldilm`), something likely failed during the compilation of the native part of this library. The following steps will show you a more verbose log that can help diagnose the issue:
+
+```bash
+# Remove the broken version first
+pip uninstall kaldilm
+pip install -v --no-cache-dir kaldilm
+```
+
 Please create an issue [on GitHub](https://github.com/csukuangfj/kaldilm/issues/new)
 if you encounter any problems while installing `kaldilm`.
 
