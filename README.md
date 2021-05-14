@@ -37,7 +37,7 @@ To test that `kaldilm` is installed successfully, run:
 $ python3 -m kaldilm --help
 ```
 
-It should the usage information of `kaldilm`.
+It should display the usage information of `kaldilm`.
 
 Please create an issue [on GitHub](https://github.com/csukuangfj/kaldilm/issues/new)
 if you encounter any problems while installing `kaldilm`.
