@@ -1,0 +1,28 @@
+
+package:
+  name: kaldilm
+  version: "1.4"
+
+source:
+  path: "{{ environ.get('KALDILM_ROOT_DIR') }}"
+
+build:
+  number: 0
+  string: py{{ environ.get('KALDILM_PYTHON_VERSION') }}
+  script_env:
+    - KALDILM_ROOT_DIR
+    - KALDILM_PYTHON_VERSION
+
+requirements:
+  host:
+    - cmake=3.18
+    - python
+    - gcc_linux-64=7
+  run:
+    - python
+
+about:
+  home: https://github.com/csukuangfj/kaldilm
+  license: Apache V2
+  license_file: LICENSE
+  summary: Python wrapper of kaldi's arpa2fst
