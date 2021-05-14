@@ -30,6 +30,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           activate-environment: kaldilm
 
+      - name: Install conda dependencies
+        shell: bash -l {0}
+        run: |
+          conda install -y -q conda-build
+
       - name: Display Python version
         shell: bash -l {0}
         run: |
