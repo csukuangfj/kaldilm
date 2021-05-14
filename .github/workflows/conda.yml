@@ -1,0 +1,52 @@
+# Copyright (c)  2021  Xiaomi Corp.       (author: Fangjun Kuang)
+
+name: build_conda
+
+on:
+  push:
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build_conda:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-16.04]
+        python-version: [3.6, 3.7, 3.8, 3.9]
+
+    steps:
+      # refer to https://github.com/actions/checkout
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+          activate-environment: kaldilm
+
+      - name: Display Python version
+        shell: bash -l {0}
+        run: |
+          python3 -c "import sys; print(sys.version)"
+          which python3
+
+      - name: Display conda info
+        shell: bash -l {0}
+        run: |
+          which conda
+          conda env list
+          conda info
+          nproc
+
+      - name: Build kaldilm
+        shell: bash -l {0}
+        env:
+          KALDILM_CONDA_TOKEN: ${{ secrets.KALDILM_CONDA_TOKEN}}
+        run: |
+          ./scripts/build_conda.sh
