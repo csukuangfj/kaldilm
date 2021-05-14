@@ -33,6 +33,7 @@ jobs:
       - name: Install conda dependencies
         shell: bash -l {0}
         run: |
+          conda install -y -q anaconda
           conda install -y -q conda-build
 
       - name: Display Python version
