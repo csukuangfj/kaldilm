@@ -7,19 +7,37 @@ Python wrapper for kaldi's [arpa2fst][1].
 
 # Installation
 
-`kaldilm` can be installed by
+`kaldilm` can be installed using either `conda` or `pip`.
+
+## Using conda
+
+```
+conda install -c k2-fsa -c conda-forge kaldilm
+```
+
+## Using pip
 
 ```bash
 pip install kaldilm
 ```
 
-In case it doesn't work (you can't import `_kaldilm`), something likely failed during the compilation of the native part of this library. The following steps will show you a more verbose log that can help diagnose the issue:
+In case it doesn't work using `pip install` (you can't import `_kaldilm`), something
+likely failed during the compilation of the native part of this library.
+The following steps will show you a more verbose log that can help diagnose the issue:
 
 ```bash
 # Remove the broken version first
 pip uninstall kaldilm
 pip install -v --no-cache-dir kaldilm
 ```
+
+To test that `kaldilm` is installed successfully, run:
+
+```
+$ python3 -m kaldilm --help
+```
+
+It should the usage information of `kaldilm`.
 
 Please create an issue [on GitHub](https://github.com/csukuangfj/kaldilm/issues/new)
 if you encounter any problems while installing `kaldilm`.
