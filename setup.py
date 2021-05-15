@@ -27,7 +27,13 @@ class BuildExtension(build_ext):
 
         os.makedirs(self.build_lib, exist_ok=True)
 
-        os.system(f'cd {build_dir}; cmake {cur_dir}; make -j _kaldilm')
+        ret = os.system(f'cd {build_dir}; cmake {cur_dir}; make -j _kaldilm')
+        if ret != 0:
+            raise Exception(
+                '\nBuild kaldilm failed. Please check the error message.\n'
+                'You can ask for help by creating an issue on GitHub.\n'
+                '\nClick:\n    https://github.com/csukuangfj/kaldilm/issues/new\n'
+            )
         lib_so = glob.glob(f'{build_dir}/lib/*.so*')
         for so in lib_so:
             shutil.copy(f'{so}', f'{self.build_lib}/')
