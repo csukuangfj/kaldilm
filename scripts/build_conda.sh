@@ -16,9 +16,15 @@ echo "KALDILM_PYTHON_VERSION: $KALDILM_PYTHON_VERSION"
 
 export KALDILM_PYTHON_VERSION
 
+export CONDA_BLD_PATH=/tmp/conda-bld
+
+conda build --no-test --no-anaconda-upload -c conda-forge ./scripts/conda/kaldilm
+
 if [ -z $KALDILM_CONDA_TOKEN ]; then
   echo "Auto upload to anaconda.org is disabled since KALDILM_CONDA_TOKEN is not set"
-  conda build --no-test --no-anaconda-upload -c conda-forge ./scripts/conda/kaldilm
 else
-  conda build --no-test -c conda-forge --token $KALDILM_CONDA_TOKEN ./scripts/conda/kaldilm
+  echo "Uploading to anaconda.org"
+  OS=linux-64
+  ls -lh $CONDA_BLD_PATH/$OS/kaldilm*.tar.bz2
+  anaconda -v -t $KALDILM_CONDA_TOKEN upload $CONDA_BLD_PATH/$OS/kaldilm*.tar.bz2 --force
 fi
