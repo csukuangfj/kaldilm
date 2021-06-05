@@ -29,10 +29,10 @@ function(download_openfst)
     URL               ${openfst_URL}
     URL_HASH          ${openfst_HASH}
     PATCH_COMMAND
-      sed -i s/enable_testing\(\)//g "src/CMakeLists.txt" &&
-      sed -i s/add_subdirectory\(test\)//g "src/CMakeLists.txt" &&
-      sed -i s/add_subdirectory\(script\)//g "src/CMakeLists.txt" &&
-      sed -i s/add_subdirectory\(extensions\)//g "src/CMakeLists.txt"
+      sed -i.bak s/enable_testing\(\)//g "src/CMakeLists.txt" &&
+      sed -i.bak s/add_subdirectory\(test\)//g "src/CMakeLists.txt" &&
+      sed -i.bak s/add_subdirectory\(script\)//g "src/CMakeLists.txt" &&
+      sed -i.bak s/add_subdirectory\(extensions\)//g "src/CMakeLists.txt"
   )
 
   FetchContent_GetProperties(openfst)
