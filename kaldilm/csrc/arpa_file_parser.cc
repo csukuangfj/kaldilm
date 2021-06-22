@@ -252,7 +252,7 @@ void ArpaFileParser::Read(std::istream &is) {
       warning_count_ > static_cast<uint32_t>(options_.max_warnings)) {
     KALDILM_WARN << "Of " << warning_count_ << " parse warnings, "
                  << options_.max_warnings << " were reported. Run program with "
-                 << "--max_warnings=-1 to see all warnings";
+                 << "--max-arpa-warnings=-1 to see all warnings";
   }
 
   current_line_.clear();
