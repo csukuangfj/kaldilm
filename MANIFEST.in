@@ -1,3 +1,5 @@
+include README.md
+include LICENSE
 include CMakeLists.txt
 recursive-include kaldilm *.*
 recursive-include cmake *.*
