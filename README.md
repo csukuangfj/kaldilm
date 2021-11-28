@@ -159,13 +159,19 @@ ngram 3=2
 and the word symbol table is `words.txt`:
 
 ```
-<eps>	0
-<s>	1
-</s>	2
-a	3
-b	4
-#0 5
+<eps> 0
+a 1
+b 2
+#0 3
+<s> 4
+</s> 5
 ```
+
+Caution: All symbols with ID >= the ID of #0 are set to `<eps>`
+during compiling HLG.
+See https://github.com/k2-fsa/icefall/blob/243fb9723cb82287ec5a891155ab9e0bc304740d/egs/librispeech/ASR/local/compile_hlg.py#L103
+If IDs of `<s>` and `</s>` are less than that of `#0`, the resulting HLG is problematic.
+
 
 You can use the following code to convert it into an FST.
 
@@ -183,29 +189,28 @@ This uses all n-gram data inside the arpa file.
 The resulting `G_fst.txt` is shown in the following
 
 ```
-3	5	3	3	3.00464
-3	0	5	0	5.75646
-0	1	3	3	12.0533
-0	2	4	4	7.95954
+3	5	1	1	3.00464
+3	0	3	0	5.75646
+0	1	1	1	12.0533
+0	2	2	2	7.95954
 0	9.97787
-1	4	4	4	3.35436
-1	0	5	0	7.59853
-2	0	5	0
-4	2	5	0	7.43735
+1	4	2	2	3.35436
+1	0	3	0	7.59853
+2	0	3	0
+4	2	3	0	7.43735
 4	0.551239
-5	4	4	4	0.804938
-5	1	5	0	9.67086
+5	4	2	2	0.804938
+5	1	3	0	9.67086
 ```
 
 which can be visualized in [k2][3] using
 
 ```python
 import k2
-with open('G_fst.txt') as f:
-  G = k2.Fsa.from_openfst(f.read(), acceptor=False)
-G.symbols = k2.SymbolTable.from_file('words.txt')
-G.aux_symbols = k2.SymbolTable.from_file('words.txt')
-# G.labels[G.labels == 5] = 0 # convert #0 to eps
+G = k2.Fsa.from_openfst(G_fst_txt, acceptor=False)
+G.labels_sym = k2.SymbolTable.from_file('words.txt')
+G.aux_labels_sym = k2.SymbolTable.from_file('words.txt')
+#G.labels[G.labels >= 3] = 0 # convert symbols with ID >= ID of #0 to eps
 G.draw('G.svg', title='G')
 ```
 
@@ -229,23 +234,22 @@ since `--max-order=1` is used.
 The generated `G_uni_fst.txt` is
 
 ```
-3	0	5	0	5.75646
-0	1	3	3	12.0533
-0	2	4	4	7.95954
+3	0	3	0	5.75646
+0	1	1	1	12.0533
+0	2	2	2	7.95954
 0	9.97787
-1	0	5	0	7.59853
-2	0	5	0
+1	0	3	0	7.59853
+2	0	3	0
 ```
 
 which can be visualized in [k2][3] using
 
 ```python
-import k2
 with open('G_uni_fst.txt') as f:
   G = k2.Fsa.from_openfst(f.read(), acceptor=False)
-G.symbols = k2.SymbolTable.from_file('words.txt')
-G.aux_symbols = k2.SymbolTable.from_file('words.txt')
-# G.labels[G.labels == 5] = 0 # convert #0 to eps
+G.labels_sym = k2.SymbolTable.from_file('words.txt')
+G.aux_labels_sym = k2.SymbolTable.from_file('words.txt')
+#G.labels[G.labels >= 3] = 0 # convert symbols with ID >= ID of #0 to eps
 G.draw('G_uni.svg', title='G_uni')
 ```
 
@@ -255,11 +259,11 @@ G.draw('G_uni.svg', title='G_uni')
 
 ## What's more
 
-Please refer to <https://github.com/k2-fsa/snowfall/blob/master/egs/librispeech/asr/simple_v1/run.sh>
-for how `kaldilm` is used in [snowfall][4].
+Please refer to <https://github.com/k2-fsa/icefall/blob/master/egs/librispeech/ASR/prepare.sh>
+for how `kaldilm` is used in [icefall][4].
 
 
-[4]: https://github.com/k2-fsa/snowfall/
+[4]: https://github.com/k2-fsa/icefall/
 [3]: https://github.com/k2-fsa/k2
 [2]: https://colab.research.google.com/drive/1rTGQiDDlhE8ezTH4kmR4m8vlvs6lnl6Z?usp=sharing
 [1]: https://github.com/kaldi-asr/kaldi/blob/master/src/lmbin/arpa2fst.cc
