@@ -8,6 +8,7 @@ import platform
 import re
 import shutil
 import subprocess
+import sys
 
 import setuptools
 from setuptools.command.build_ext import build_ext
