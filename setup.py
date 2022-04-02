@@ -32,8 +32,25 @@ class BuildExtension(build_ext):
 
         os.makedirs(self.build_lib, exist_ok=True)
 
+        cmake_args = os.environ.get("KALDILM_CMAKE_ARGS", "")
+        make_args = os.environ.get("KALDILM_MAKE_ARGS", "")
+        system_make_args = os.environ.get("MAKEFLAGS", "")
+
+        if cmake_args == "":
+            cmake_args = "-DCMAKE_BUILD_TYPE=Release"
+
+        if make_args == "" and system_make_args == "":
+            print("For fast compilation, run:")
+            print('export KALDILM_MAKE_ARGS="-j"; python setup.py install')
+
+        if "PYTHON_EXECUTABLE" not in cmake_args:
+            print(f"Setting PYTHON_EXECUTABLE to {sys.executable}")
+            cmake_args += f" -DPYTHON_EXECUTABLE={sys.executable}"
+
         if not is_windows():
-            ret = os.system(f"cd {build_dir}; cmake {cur_dir}; make -j _kaldilm")
+            ret = os.system(
+                f"cd {build_dir}; cmake {cmake_args} {cur_dir}; make -j _kaldilm"
+            )
             if ret != 0:
                 raise Exception(
                     "\nBuild kaldilm failed. Please check the error message.\n"
@@ -55,12 +72,12 @@ class BuildExtension(build_ext):
         # for windows
 
         build_cmd = f"""
-            cmake -B {self.build_temp} -S {cur_dir}
+            cmake {cmake_args} -B {self.build_temp} -S {cur_dir}
             cmake --build {self.build_temp} --target _kaldilm --config Release -- -m
         """
         print(f"build command is:\n{build_cmd}")
 
-        ret = os.system(f"cmake -B {self.build_temp} -S {cur_dir}")
+        ret = os.system(f"cmake {cmake_args} -B {self.build_temp} -S {cur_dir}")
         if ret != 0:
             raise Exception("Failed to build kaldilm")
         ret = os.system(
