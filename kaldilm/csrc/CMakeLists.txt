@@ -6,7 +6,7 @@ set(kaldilm_srcs
   string_utils.cc
 )
 
-add_library(kaldilm_core SHARED ${kaldilm_srcs})
+add_library(kaldilm_core ${kaldilm_srcs})
 target_link_libraries(kaldilm_core fst)
 
 add_executable(arpa_file_parser_test arpa_file_parser_test.cc)

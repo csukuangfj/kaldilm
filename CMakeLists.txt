@@ -25,6 +25,12 @@ endif()
 set(CMAKE_CXX_STANDARD 11 CACHE STRING "The C++ version to be used.")
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(BUILD_SHARED_LIBS ON)
+if(WIN32)
+  message(STATUS "Set BUILD_SHARED_LIBS to OFF for Windows")
+  set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+endif()
+
 message(STATUS "C++ Standard version: ${CMAKE_CXX_STANDARD}")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
