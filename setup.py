@@ -55,12 +55,12 @@ class BuildExtension(build_ext):
         # for windows
 
         build_cmd = f"""
-            cmake {cmake_args} -B {self.build_temp} -S {cur_dir}
+            cmake -B {self.build_temp} -S {cur_dir}
             cmake --build {self.build_temp} --target _kaldilm --config Release -- -m
         """
         print(f"build command is:\n{build_cmd}")
 
-        ret = os.system(f"cmake {cmake_args} -B {self.build_temp} -S {cur_dir}")
+        ret = os.system(f"cmake -B {self.build_temp} -S {cur_dir}")
         if ret != 0:
             raise Exception("Failed to build kaldilm")
         ret = os.system(
