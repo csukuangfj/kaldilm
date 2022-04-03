@@ -49,6 +49,7 @@ jobs:
 
       - name: Build packages
         shell: bash
+        run: |
           python3 setup.py bdist_wheel
           ls -lh dist/
           pip install ./dist/*.whl
