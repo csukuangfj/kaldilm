@@ -10,14 +10,24 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, macos-10.15]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.6
+          python-version: ${{ matrix.python-version }}
+
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
 
       - name: Build
         shell: bash
@@ -25,8 +35,21 @@ jobs:
           mkdir build
           cd build
           cmake ..
-          make -j
+          make VERBOSE=1 -j
           ls -l lib
           ls -l bin
           ./bin/arpa_file_parser_test
           ./bin/arpa_lm_compiler_test
+
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install wheel twine setuptools
+
+      - name: Build packages
+        shell: bash
+        run: |
+          python3 setup.py bdist_wheel
+          ls -lh dist/
+          pip install ./dist/*.whl
