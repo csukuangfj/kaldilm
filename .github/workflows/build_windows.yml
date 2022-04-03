@@ -11,14 +11,12 @@ on:
 jobs:
   build-windows:
     # see https://github.com/actions/virtual-environments/blob/win19/20210525.0/images/win/Windows2019-Readme.md
-    # if: github.event.label.name == 'ready' || github.event_name == 'push'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [windows-2019]
-        # Python 3.9 is for PyTorch 1.7.1, 1.8.x, 1.9.0
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.6, 3.7, 3.8, 3.9, 3.10]
 
     steps:
       - uses: actions/checkout@v2
@@ -77,3 +75,12 @@ jobs:
         with:
           name: python-${{ matrix.python-version }}-${{ matrix.os }}-cpu
           path: dist/*.whl
+
+      - name: Build tests
+        shell: bash
+        run: |
+          cd build_release
+          cmake --build . --target ALL_BUILD --config Release
+          ls -lh bin/*/*
+          ./bin/Release/arpa_file_parser_test
+          ./bin/Release/arpa_lm_compiler_test
