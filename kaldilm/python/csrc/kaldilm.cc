@@ -27,10 +27,10 @@ static void PrintFstInTextFormat(std::ostream &os,
   os << '\n';
   bool acceptor = false, write_one = false;
   // fst::FstPrinter<Arc> printer(t, t.InputSymbols(), t.OutputSymbols(), NULL,
-  //                              acceptor, write_one, "\t");
+  //                              acceptor, write_one, " ");
 
   fst::FstPrinter<Arc> printer(t, nullptr, nullptr, nullptr, acceptor,
-                               write_one, "\t");
+                               write_one, " ");
   printer.Print(&os, "<unknown>");
   if (os.fail()) KALDILM_ERR << "Stream failure detected writing FST to stream";
   // Write another newline as a terminating character.  The read routine will
