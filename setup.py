@@ -43,6 +43,8 @@ class BuildExtension(build_ext):
         if make_args == "" and system_make_args == "":
             print("For fast compilation, run:")
             print('export KALDILM_MAKE_ARGS="-j"; python setup.py install')
+            make_args = " -j4 "
+            print("Setting make_args to '-j4'")
 
         if "PYTHON_EXECUTABLE" not in cmake_args:
             print(f"Setting PYTHON_EXECUTABLE to {sys.executable}")
