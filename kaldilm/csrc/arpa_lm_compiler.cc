@@ -45,7 +45,9 @@ struct VectorHasher {  // hashing function for vector<Int>.
 class ArpaLmCompilerImplInterface {
  public:
   virtual ~ArpaLmCompilerImplInterface() = default;
-  virtual void ConsumeNGram(const NGram &ngram, bool is_highest) = 0;
+  virtual void ConsumeNGram(
+      const NGram &ngram, bool is_highest,
+      ArpaLmCompilerImplInterface *low_order = nullptr) = 0;
 };
 
 namespace {
@@ -57,14 +59,14 @@ typedef int32_t Symbol;
 // n-gram model with symbol ids fitting int32_t.
 class GeneralHistKey {
  public:
-  // Construct key from being and end iterators.
+  // Construct key from begin and end iterators.
   template <class InputIt>
   GeneralHistKey(InputIt begin, InputIt end) : vector_(begin, end) {}
   // Construct empty history key.
   GeneralHistKey() : vector_() {}
   // Return tails of the key as a GeneralHistKey. The tails of an n-gram
   // w[1..n] is the sequence w[2..n] (and the heads is w[1..n-1], but the
-  // key class does not need this operartion).
+  // key class does not need this operation).
   GeneralHistKey Tails() const {
     return GeneralHistKey(vector_.begin() + 1, vector_.end());
   }
@@ -124,7 +126,8 @@ class ArpaLmCompilerImpl : public ArpaLmCompilerImplInterface {
   ArpaLmCompilerImpl(ArpaLmCompiler *parent, fst::StdVectorFst *fst,
                      Symbol sub_eps);
 
-  virtual void ConsumeNGram(const NGram &ngram, bool is_highest);
+  void ConsumeNGram(const NGram &ngram, bool is_highest,
+                    ArpaLmCompilerImplInterface *low_order = nullptr) override;
 
  private:
   StateId AddStateWithBackoff(HistKey key, float backoff);
@@ -166,8 +169,9 @@ ArpaLmCompilerImpl<HistKey>::ArpaLmCompilerImpl(ArpaLmCompiler *parent,
 }
 
 template <class HistKey>
-void ArpaLmCompilerImpl<HistKey>::ConsumeNGram(const NGram &ngram,
-                                               bool is_highest) {
+void ArpaLmCompilerImpl<HistKey>::ConsumeNGram(
+    const NGram &ngram, bool is_highest,
+    ArpaLmCompilerImplInterface *low_order) {
   // Generally, we do the following. Suppose we are adding an n-gram "A B
   // C". Then find the node for "A B", add a new node for "A B C", and connect
   // them with the arc accepting "C" with the specified weight. Also, add a
@@ -328,7 +332,8 @@ void ArpaLmCompiler::ConsumeNGram(const NGram &ngram) {
   }
 
   bool is_highest = ngram.words.size() == NgramCounts().size();
-  impl_->ConsumeNGram(ngram, is_highest);
+  impl_->ConsumeNGram(ngram, is_highest,
+                      low_order_ ? low_order_->impl_ : nullptr);
 }
 
 void ArpaLmCompiler::RemoveRedundantStates() {
