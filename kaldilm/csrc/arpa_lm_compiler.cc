@@ -42,18 +42,16 @@ struct VectorHasher {  // hashing function for vector<Int>.
   static const int kPrime = 7853;
 };
 
-class ArpaLmCompilerImplInterface {
- public:
-  virtual ~ArpaLmCompilerImplInterface() = default;
-  virtual void ConsumeNGram(
-      const NGram &ngram, bool is_highest,
-      ArpaLmCompilerImplInterface *low_order = nullptr) = 0;
-};
-
 namespace {
 
 typedef int32_t StateId;
 typedef int32_t Symbol;
+
+struct StateWeight {
+  StateId state;
+  float weight;   // -ngram.logprob
+  float backoff;  // -ngram.backoff
+};
 
 // GeneralHistKey can represent state history in an arbitrarily large n
 // n-gram model with symbol ids fitting int32_t.
@@ -120,6 +118,15 @@ class OptimizedHistKey {
 
 }  // namespace
 
+class ArpaLmCompilerImplInterface {
+ public:
+  virtual ~ArpaLmCompilerImplInterface() = default;
+  virtual void ConsumeNGram(
+      const NGram &ngram, bool is_highest,
+      ArpaLmCompilerImplInterface *low_order = nullptr) = 0;
+  virtual StateWeight GetWeight(const std::vector<int32_t> &ngram) const = 0;
+};
+
 template <class HistKey>
 class ArpaLmCompilerImpl : public ArpaLmCompilerImplInterface {
  public:
@@ -128,6 +135,16 @@ class ArpaLmCompilerImpl : public ArpaLmCompilerImplInterface {
 
   void ConsumeNGram(const NGram &ngram, bool is_highest,
                     ArpaLmCompilerImplInterface *low_order = nullptr) override;
+
+  StateWeight GetWeight(const std::vector<int32_t> &ngram) const override {
+    HistKey words(ngram.begin(), ngram.end());
+    auto it = this->history_.find(words);
+    if (it == this->history_.end()) {
+      return {0, 0, 0};
+    } else {
+      return it->second;
+    }
+  }
 
  private:
   StateId AddStateWithBackoff(HistKey key, float backoff);
@@ -140,7 +157,7 @@ class ArpaLmCompilerImpl : public ArpaLmCompilerImplInterface {
   Symbol sub_eps_;
 
   StateId eos_state_;
-  typedef std::unordered_map<HistKey, StateId, typename HistKey::HashType>
+  typedef std::unordered_map<HistKey, StateWeight, typename HistKey::HashType>
       HistoryMap;
   HistoryMap history_;
 };
@@ -157,7 +174,7 @@ ArpaLmCompilerImpl<HistKey>::ArpaLmCompilerImpl(ArpaLmCompiler *parent,
   // The algorithm maintains state per history. The 0-gram is a special state
   // for empty history. All unigrams (including BOS) backoff into this state.
   StateId zerogram = fst_->AddState();
-  history_[HistKey()] = zerogram;
+  history_[HistKey()] = {zerogram, 0, 0};
 
   // Also, if </s> is not treated as epsilon, create a common end state for
   // all transitions accepting the </s>, since they do not back off. This small
@@ -207,10 +224,27 @@ void ArpaLmCompilerImpl<HistKey>::ConsumeNGram(
     return;
   }
 
-  StateId source = source_it->second;
+  StateId source = source_it->second.state;
   StateId dest;
   Symbol sym = ngram.words.back();
   float weight = -ngram.logprob;
+  float backoff = -ngram.backoff;
+
+  if (low_order == nullptr) {
+    source_it->second.weight = weight;
+    source_it->second.backoff = backoff;
+  } else {
+    auto state_weight = low_order->GetWeight(ngram.words);
+    // if ngram.words does not exist in low_order, then
+    // state_weight.weight and state_weight.backoff are both zero
+
+    // -(log_prob_high_order - log_prob_low_order)
+    // =  -log_prob_high_order + log_prob_low_order
+    // = weight - state_weight.weight
+    weight -= state_weight.weight;
+    backoff -= state_weight.backoff;
+  }
+
   if (sym == sub_eps_ || sym == 0) {
     KALDILM_ERR << " <eps> or disambiguation symbol " << sym
                 << "found in the ARPA file. ";
@@ -232,7 +266,7 @@ void ArpaLmCompilerImpl<HistKey>::ConsumeNGram(
     // so we better do not do that at all).
     dest = AddStateWithBackoff(
         HistKey(ngram.words.begin() + (is_highest ? 1 : 0), ngram.words.end()),
-        -ngram.backoff);
+        backoff);
   }
 
   if (sym == bos_symbol_) {
@@ -264,11 +298,11 @@ StateId ArpaLmCompilerImpl<HistKey>::AddStateWithBackoff(HistKey key,
   if (dest_it != history_.end()) {
     // Found an existing state in the history map. Invariant: if the state in
     // the map, then its backoff arc is in the FST. We are done.
-    return dest_it->second;
+    return dest_it->second.state;
   }
   // Otherwise create a new state and its backoff arc, and register in the map.
   StateId dest = fst_->AddState();
-  history_[key] = dest;
+  history_[key] = {dest, 0, 0};
   CreateBackoff(key.Tails(), dest, backoff);
   return dest;
 }
@@ -290,7 +324,7 @@ inline void ArpaLmCompilerImpl<HistKey>::CreateBackoff(HistKey key,
   // The arc should transduce either <eos> or #0 to <eps>, depending on the
   // epsilon substitution mode. This is the only case when input and output
   // label may differ.
-  fst_->AddArc(state, fst::StdArc(sub_eps_, 0, weight, dest_it->second));
+  fst_->AddArc(state, fst::StdArc(sub_eps_, 0, weight, dest_it->second.state));
 }
 
 ArpaLmCompiler::~ArpaLmCompiler() {
