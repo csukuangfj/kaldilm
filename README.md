@@ -227,7 +227,8 @@ which can be visualized in [k2][3] using
 
 ```python
 import k2
-G = k2.Fsa.from_openfst(G_fst_txt, acceptor=False)
+with open('G_fst.txt') as f:
+  G = k2.Fsa.from_openfst(f.read(), acceptor=False)
 G.labels_sym = k2.SymbolTable.from_file('words.txt')
 G.aux_labels_sym = k2.SymbolTable.from_file('words.txt')
 #G.labels[G.labels >= 3] = 0 # convert symbols with ID >= ID of #0 to eps
