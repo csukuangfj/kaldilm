@@ -1,7 +1,7 @@
 
 package:
   name: kaldilm
-  version: "1.14"
+  version: "1.15"
 
 source:
   path: "{{ environ.get('KALDILM_ROOT_DIR') }}"
