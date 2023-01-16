@@ -167,7 +167,7 @@ b 2
 </s> 5
 ```
 
-Note: Numbers in the arpa file are `log10(p)`, where numbers on arcs
+Note: Numbers in the arpa file are `log10(p)`, while numbers on arcs
 in OpenFst are `-log(p)` and it is `log(p)` in `k2`.
 
 `log(10) = 2.3026`
