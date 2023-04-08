@@ -6,15 +6,8 @@
 Welcome to kaldilm's documentation!
 ===================================
 
+
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 5
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   tutorials/index

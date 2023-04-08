@@ -55,6 +55,7 @@ extensions = [
     "sphinx_rtd_theme",
     "sphinx_tabs.tabs",
     "sphinxcontrib.youtube",
+    "sphinx.ext.mathjax",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -103,3 +104,7 @@ html_theme_options = {
 rst_epilog = """
 .. _Kaldi: https://github.com/kaldi-asr/kaldi
 """
+
+mathjax_path = (
+    "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+)
