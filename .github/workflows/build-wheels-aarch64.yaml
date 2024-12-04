@@ -33,7 +33,7 @@ jobs:
       # see https://cibuildwheel.readthedocs.io/en/stable/changelog/
       # for a list of versions
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.11.4
+        uses: pypa/cibuildwheel@v2.21.3
         env:
           CIBW_SKIP: "cp27-* cp35-* cp36-* *-win32 pp* *-musllinux* *-manylinux_i686"
           CIBW_BUILD_VERBOSITY: 3
@@ -44,7 +44,7 @@ jobs:
         run: |
           ls -lh ./wheelhouse/
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
 
