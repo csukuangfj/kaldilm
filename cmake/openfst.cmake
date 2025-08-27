@@ -7,8 +7,28 @@ function(download_openfst)
 
   include(FetchContent)
 
-  set(openfst_URL  "https://github.com/kkm000/openfst/archive/refs/tags/win/1.6.5.1.tar.gz")
-  set(openfst_HASH "SHA256=02c49b559c3976a536876063369efc0e41ab374be1035918036474343877046e")
+  set(openfst_URL  "https://github.com/csukuangfj/openfst/archive/refs/tags/sherpa-onnx-2024-06-13.tar.gz")
+  set(openfst_URL2 "https://hub.nuaa.cf/csukuangfj/openfst/archive/refs/tags/sherpa-onnx-2024-06-13.tar.gz")
+  set(openfst_HASH "SHA256=f10a71c6b64d89eabdc316d372b956c30c825c7c298e2f20c780320e8181ffb6")
+
+  # If you don't have access to the Internet,
+  # please pre-download it
+  set(possible_file_locations
+    $ENV{HOME}/Downloads/openfst-sherpa-onnx-2024-06-13.tar.gz
+    ${CMAKE_SOURCE_DIR}/openfst-sherpa-onnx-2024-06-13.tar.gz
+    ${CMAKE_BINARY_DIR}/openfst-sherpa-onnx-2024-06-13.tar.gz
+    /tmp/openfst-sherpa-onnx-2024-06-13.tar.gz
+    /star-fj/fangjun/download/github/openfst-sherpa-onnx-2024-06-13.tar.gz
+  )
+
+  foreach(f IN LISTS possible_file_locations)
+    if(EXISTS ${f})
+      set(openfst_URL  "${f}")
+      file(TO_CMAKE_PATH "${openfst_URL}" openfst_URL)
+      set(openfst_URL2)
+      break()
+    endif()
+  endforeach()
 
   set(HAVE_BIN OFF CACHE BOOL "" FORCE)
   set(HAVE_SCRIPT OFF CACHE BOOL "" FORCE)
