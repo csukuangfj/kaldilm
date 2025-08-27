@@ -1,4 +1,4 @@
-name: build
+name: build-windows
 
 on:
   push:
@@ -15,11 +15,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019]
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        os: [windows-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -28,18 +28,22 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
 
       - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
+        shell: bash
+        run: |
+          python -c "import sys; print(sys.version)"
 
       - name: Install Python dependencies
+        shell: bash
         run: |
-          pip3 install -qq wheel twine dataclasses numpy typing_extensions
+          pip3 install -qq wheel twine dataclasses numpy typing_extensions setuptools
 
       - name: Display CMake version
+        shell: bash
         run: |
           cmake --version
           cmake --help
@@ -71,7 +75,7 @@ jobs:
           pip install ./dist/*.whl
 
       - name: Upload Wheel
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: python-${{ matrix.python-version }}-${{ matrix.os }}-cpu
           path: dist/*.whl

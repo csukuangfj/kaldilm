@@ -5,6 +5,7 @@
 #ifndef KALDILM_CSRC_STRING_UTILS_H_
 #define KALDILM_CSRC_STRING_UTILS_H_
 
+#include <cstdint>
 #include <string>
 #include <vector>
 

@@ -5,21 +5,33 @@ function(download_pybind11)
 
   include(FetchContent)
 
-  set(pybind11_URL  "https://github.com/pybind/pybind11/archive/refs/tags/v2.10.2.tar.gz")
-  set(pybind11_HASH "SHA256=93bd1e625e43e03028a3ea7389bba5d3f9f2596abc074b068e70f4ef9b1314ae")
+  set(pybind11_URL  "https://github.com/pybind/pybind11/archive/refs/tags/v3.0.0.tar.gz")
+  set(pybind11_HASH "SHA256=453b1a3e2b266c3ae9da872411cadb6d693ac18063bd73226d96cfb7015a200c")
 
-  # If you don't have access to the Internet, please download it to your
-  # local drive and modify the following line according to your needs.
-  if(EXISTS "/star-fj/fangjun/download/github/pybind11-2.10.2.tar.gz")
-    set(pybind11_URL  "file:///star-fj/fangjun/download/github/pybind11-2.10.2.tar.gz")
-  elseif(EXISTS "/Users/fangjun/Downloads/pybind11-2.10.2.tar.gz")
-    set(pybind11_URL  "file:///Users/fangjun/Downloads/pybind11-2.10.2.tar.gz")
-  elseif(EXISTS "/tmp/pybind11-2.10.2.tar.gz")
-    set(pybind11_URL  "file:///tmp/pybind11-2.10.2.tar.gz")
-  endif()
+  # If you don't have access to the Internet,
+  # please pre-download pybind11
+  set(possible_file_locations
+    $ENV{HOME}/Downloads/pybind11-3.0.0.tar.gz
+    ${CMAKE_SOURCE_DIR}/pybind11-3.0.0.tar.gz
+    ${CMAKE_BINARY_DIR}/pybind11-3.0.0.tar.gz
+    /tmp/pybind11-3.0.0.tar.gz
+    /star-fj/fangjun/download/github/pybind11-3.0.0.tar.gz
+  )
+
+  foreach(f IN LISTS possible_file_locations)
+    if(EXISTS ${f})
+      set(pybind11_URL  "${f}")
+      file(TO_CMAKE_PATH "${pybind11_URL}" pybind11_URL)
+      message(STATUS "Found local downloaded pybind11: ${pybind11_URL}")
+      set(pybind11_URL2)
+      break()
+    endif()
+  endforeach()
 
   FetchContent_Declare(pybind11
-    URL               ${pybind11_URL}
+    URL
+      ${pybind11_URL}
+      ${pybind11_URL2}
     URL_HASH          ${pybind11_HASH}
   )
 
@@ -33,4 +45,3 @@ function(download_pybind11)
 endfunction()
 
 download_pybind11()
-

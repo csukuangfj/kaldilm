@@ -1,11 +1,14 @@
 # Copyright (c)  2020  Xiaomi Corporation (author: Fangjun Kuang)
 
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "4.0.0")
+  set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+endif()
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 project(kaldilm)
 
 # also change scripts/conda/kaldilm/meta.yml
-set(kaldilm_VERSION "1.15.2")
+set(kaldilm_VERSION "1.15.4")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
@@ -27,7 +30,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_STANDARD 11 CACHE STRING "The C++ version to be used.")
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "The C++ version to be used.")
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(BUILD_SHARED_LIBS ON)
