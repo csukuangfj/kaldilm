@@ -120,6 +120,7 @@ def get_package_version():
 package_name = "kaldilm"
 
 setuptools.setup(
+    python_requires=">=3.8",
     name=package_name,
     version=get_package_version(),
     author="Fangjun Kuang",
@@ -139,5 +140,5 @@ setuptools.setup(
         "Programming Language :: Python",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
-    license="Apache licensed, as found in the LICENSE file",
+    license="Apache-2.0",
 )
