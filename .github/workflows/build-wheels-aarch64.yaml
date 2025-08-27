@@ -35,6 +35,7 @@ jobs:
           CIBW_BUILD: "${{ matrix.python-version}}-* "
           CIBW_BUILD_VERBOSITY: 3
           CIBW_ARCHS_LINUX: aarch64
+          CIBW_SKIP: "cp27-* cp35-* *-win32 pp* *-musllinux*"
           CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/${{ matrix.manylinux }}_aarch64
 
       - name: Display wheels
