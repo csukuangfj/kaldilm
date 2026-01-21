@@ -90,7 +90,7 @@ ArpaLmCompiler *Compile(bool seps, const std::string &infile) {
   // Tests in this form cannot be run with epsilon substitution, unless every
   // random path is also fitted with a #0-transducing self-loop.
   ArpaLmCompiler *lm_compiler =
-      new ArpaLmCompiler(options, seps ? kDisambig : 0, &symbols);
+      new ArpaLmCompiler(options, seps ? kDisambig : 0, &symbols, nullptr);
   {
     std::ifstream inf(infile);
     lm_compiler->Read(inf);

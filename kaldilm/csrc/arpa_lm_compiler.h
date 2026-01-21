@@ -17,8 +17,11 @@ class ArpaLmCompilerImplInterface;
 class ArpaLmCompiler : public ArpaFileParser {
  public:
   ArpaLmCompiler(const ArpaParseOptions &options, int sub_eps,
-                 fst::SymbolTable *symbols)
-      : ArpaFileParser(options, symbols), sub_eps_(sub_eps), impl_(nullptr) {}
+                 fst::SymbolTable *symbols, ArpaLmCompiler *low_order = nullptr)
+      : ArpaFileParser(options, symbols),
+        sub_eps_(sub_eps),
+        impl_(nullptr),
+        low_order_(low_order) {}
   ~ArpaLmCompiler();
 
   const fst::StdVectorFst &Fst() const { return fst_; }
@@ -37,7 +40,8 @@ class ArpaLmCompiler : public ArpaFileParser {
   void Check() const;
 
   int sub_eps_;
-  ArpaLmCompilerImplInterface *impl_;  // Owned.
+  ArpaLmCompilerImplInterface *impl_;    // Owned.
+  ArpaLmCompiler *low_order_ = nullptr;  // Owned.
   fst::StdVectorFst fst_;
   template <class HistKey>
   friend class ArpaLmCompilerImpl;
