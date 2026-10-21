@@ -42,6 +42,10 @@ jobs:
           CIBW_BUILD: "${{ matrix.python-version}}-* "
           CIBW_SKIP: "cp27-* cp35-* *-win32 pp* *-musllinux*"
           CIBW_BUILD_VERBOSITY: 3
+          # Install the built wheel into a test venv and exercise it before
+          # anything can reach the publish step. {project} is the project
+          # root; the smoke test imports only the installed package.
+          CIBW_TEST_COMMAND: python {project}/scripts/smoke_test.py
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64:2026.05.07-1
 
       - name: Build wheels
@@ -51,6 +55,10 @@ jobs:
           CIBW_BUILD: "${{ matrix.python-version}}-* "
           CIBW_SKIP: "cp27-* cp35-* *-win32 pp* *-musllinux*"
           CIBW_BUILD_VERBOSITY: 3
+          # Install the built wheel into a test venv and exercise it before
+          # anything can reach the publish step. {project} is the project
+          # root; the smoke test imports only the installed package.
+          CIBW_TEST_COMMAND: python {project}/scripts/smoke_test.py
           # cibuildwheel 4.x runs delvewheel repair by default on Windows.
           # _kaldilm.pyd is self-contained (kaldilm_core and openfst are linked
           # statically), so there is nothing for delvewheel to bundle and it
