@@ -20,7 +20,6 @@ on:
   push:
     branches:
       - wheel
-      - wheel-android
     tags:
       - '*'
   workflow_dispatch:
