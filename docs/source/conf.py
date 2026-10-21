@@ -11,6 +11,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import datetime
 import os
 import re
 import sys
@@ -22,8 +23,9 @@ sys.path.insert(0, os.path.abspath("."))
 
 # -- Project information -----------------------------------------------------
 
+year = datetime.date.today().year
 project = "kaldilm"
-copyright = "2022-2023, Fangjun Kuang"
+copyright = f"2022-{year}, Fangjun Kuang"
 author = "Fangjun Kuang"
 
 
@@ -54,6 +56,7 @@ extensions = [
     "sphinx_autodoc_typehints",
     "sphinx_rtd_theme",
     "sphinx_tabs.tabs",
+    "sphinx_copybutton",
     "sphinxcontrib.youtube",
     "sphinx.ext.mathjax",
 ]
@@ -105,6 +108,14 @@ rst_epilog = """
 .. _Kaldi: https://github.com/kaldi-asr/kaldi
 """
 
-mathjax_path = (
-    "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-)
+# NOTE: mathjax_path is intentionally not overridden. It used to point at
+# https://cdn.mathjax.org, which was shut down in 2017, so math was broken in
+# the HTML pages. Letting sphinx.ext.mathjax use its own default CDN works.
+
+# refer to
+# https://docs.readthedocs.com/platform/latest/guides/pdf-non-ascii-languages.html
+latex_engine = "xelatex"
+latex_use_xindy = False
+latex_elements = {
+    "preamble": "\\usepackage[UTF8]{ctex}\n",
+}
