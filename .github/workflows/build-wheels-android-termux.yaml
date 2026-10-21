@@ -20,6 +20,7 @@ on:
   push:
     branches:
       - wheel
+      - wheel-android
     tags:
       - '*'
   workflow_dispatch:
@@ -98,9 +99,12 @@ jobs:
       - name: Display wheels
         shell: bash
         run: |
-          # setup.py rewrites kaldilm/python/kaldilm/__init__.py, so the source
-          # tree is dirty too -- take back everything the container touched.
-          sudo chown -R "$USER" ./build ./dist ./wheelhouse ./kaldilm
+          # The container runs as root and writes into the mounted workspace
+          # (setup.py also rewrites kaldilm/python/kaldilm/__init__.py and
+          # creates kaldilm.egg-info), so take back everything it touched.
+          # Chown the whole workspace: any path left root-owned makes later
+          # steps fail with "chmod: Operation not permitted".
+          sudo chown -R "$USER" "${{ github.workspace }}"
           ls -lh ./dist/
           unzip -l ./dist/*.whl
 
@@ -115,8 +119,8 @@ jobs:
       - name: Smoke test
         shell: bash
         run: |
-          chmod -R a+w "${{ github.workspace }}"
-
+          # Both mounts are read-only and the container runs as root, so no
+          # permission fixup is needed here.
           docker run --rm \
             --user 0:0 \
             --volume ${{ github.workspace }}/dist:/wheels:ro \
