@@ -1,0 +1,107 @@
+name: build-wheels-win-arm64
+
+on:
+  push:
+    branches:
+      - wheel
+    tags:
+      - '*'
+
+  workflow_dispatch:
+
+concurrency:
+  group: build-wheels-win-arm64-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_wheels_win_arm64:
+    name: ${{ matrix.python-version }}
+    runs-on: windows-11-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        # CPython has native Windows ARM64 builds for 3.11 and later; 3.8-3.10
+        # have no arm64 interpreter.
+        #
+        # python-version is the cibuildwheel selector; python-short is the same
+        # version in actions/setup-python form, used only by the smoke test.
+        # The smoke test runs outside cibuildwheel's venv, so without it the
+        # host python3 is a different version and pip rejects the wheel with
+        # "not a supported wheel on this platform".
+        include:
+          - python-version: "cp311"
+            python-short: "3.11"
+          - python-version: "cp312"
+            python-short: "3.12"
+          - python-version: "cp313"
+            python-short: "3.13"
+          - python-version: "cp314"
+            python-short: "3.14"
+          - python-version: "cp315"
+            python-short: "3.15"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # see https://cibuildwheel.readthedocs.io/en/stable/changelog/
+      # for a list of versions
+      # No cp38 split here: Windows on ARM has no CPython 3.8 (see above), so
+      # cibuildwheel 4.x can be used for every entry in this matrix.
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v4.3.2
+        env:
+          CIBW_BUILD: "${{ matrix.python-version}}-* "
+          CIBW_ARCHS: "ARM64"
+          CIBW_BUILD_VERBOSITY: 3
+          # No KALDILM_CMAKE_ARGS with -A ARM64: CMake on windows-11-arm
+          # already targets the host architecture (ARM64). Passing -A makes
+          # CMake fail with "Generator does not support platform
+          # specification" when it picks Ninja.
+          # cibuildwheel 4.x runs delvewheel repair by default on Windows.
+          # _kaldilm.pyd is self-contained (kaldilm_core and openfst are linked
+          # statically), so there is nothing for delvewheel to bundle and it
+          # errors. Skip the repair step entirely.
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
+
+      - name: Display wheels
+        shell: bash
+        run: |
+          ls -lh ./wheelhouse/
+
+          unzip -l ./wheelhouse/*.whl
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-win-arm64-${{ matrix.python-version }}
+          path: ./wheelhouse/*.whl
+
+      # A green compile does not prove the wheel imports on ARM64 -- actually
+      # install it and compile a real ARPA model before publishing. Run from
+      # outside the source tree so `import kaldilm` resolves to site-packages.
+      #
+      # This interpreter must match the wheel tag: cibuildwheel builds in its
+      # own venv, so the runner default python3 would be some other version.
+      - name: Setup Python ${{ matrix.python-short }} for the smoke test
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-short }}
+
+      - name: Smoke test
+        shell: bash
+        run: |
+          python3 -m pip install --force-reinstall ./wheelhouse/*.whl
+
+          cd "$RUNNER_TEMP"
+
+          python3 "$GITHUB_WORKSPACE/scripts/smoke_test.py"
+
+      - name: Publish wheels to PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        shell: bash
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install wheel twine==5.0.0 setuptools
+
+          twine upload --skip-existing ./wheelhouse/*.whl

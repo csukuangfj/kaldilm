@@ -1,0 +1,75 @@
+name: build-wheels-armv7l
+
+on:
+  push:
+    branches:
+      - wheel
+    tags:
+      - '*'
+
+  workflow_dispatch:
+
+concurrency:
+  group: build-wheels-armv7l-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_wheels_armv7l:
+    name: ${{ matrix.python-version }}
+    # an aarch64 host executes armv7 binaries natively, so no QEMU is needed --
+    # same setup as sherpa-onnx/kaldifst build-wheels-armv7l.yaml. Do NOT move
+    # this back to ubuntu-latest + qemu: emulation is far slower and flakier.
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        # The pinned manylinux_2_31_armv7l image ships CPython 3.9+, so cp38
+        # is omitted here only; the x86_64/aarch64/win jobs still build it.
+        python-version: ["cp39", "cp310", "cp311", "cp312", "cp313", "cp314", "cp315"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # see https://cibuildwheel.readthedocs.io/en/stable/changelog/
+      # for a list of versions
+      # cibuildwheel 4.x is needed for cp315. There is no cp38 split here
+      # because this image never shipped a CPython 3.8 interpreter.
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v4.3.2
+        env:
+          CIBW_BUILD: "${{ matrix.python-version}}-* "
+          CIBW_SKIP: "pp* *-musllinux*"
+          CIBW_ARCHS: "armv7l"
+          CIBW_BUILD_VERBOSITY: 3
+          # Install the built wheel into a test venv and exercise it before
+          # anything can reach the publish step. {project} is the project
+          # root; the smoke test imports only the installed package.
+          CIBW_TEST_COMMAND: python {project}/scripts/smoke_test.py
+          # cibuildwheel's default armv7l image is still experimental; pin the
+          # one used by piper-phonemize, sherpa-onnx and kaldifst.
+          CIBW_MANYLINUX_ARMV7L_IMAGE: quay.io/pypa/manylinux_2_31_armv7l
+          # Let make use every CPU available.
+          CIBW_ENVIRONMENT_LINUX: KALDILM_MAKE_ARGS="-j$(nproc)"
+
+      - name: Display wheels
+        shell: bash
+        run: |
+          ls -lh ./wheelhouse/
+
+          unzip -l ./wheelhouse/*.whl
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-linux-armv7l-${{ matrix.python-version }}
+          path: ./wheelhouse/*.whl
+
+      - name: Publish wheels to PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        shell: bash
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install wheel twine==5.0.0 setuptools
+
+          twine upload --skip-existing ./wheelhouse/*.whl

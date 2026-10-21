@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04-arm]
-        python-version: ["cp38", "cp39", "cp310", "cp311", "cp312", "cp313", "cp314"]
+        python-version: ["cp38", "cp39", "cp310", "cp311", "cp312", "cp313", "cp314", "cp315"]
         manylinux: [manylinux2014]
 
     steps:
@@ -29,11 +29,36 @@ jobs:
 
       # see https://cibuildwheel.readthedocs.io/en/stable/changelog/
       # for a list of versions
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v3.1.4
+
+      # CPython 3.8 is EOL and has been dropped upstream: the manylinux images
+      # removed the interpreter on 2026-05-07 (pypa/manylinux#1884) and
+      # cibuildwheel 4.0 dropped support for building it. The last combination
+      # that still works is cibuildwheel 3.x plus a pinned image from before
+      # that drop. cp315 needs cibuildwheel 4.x, so the two are split here.
+      - name: Build wheels (cp38)
+        if: matrix.python-version == 'cp38'
+        uses: pypa/cibuildwheel@v3.4.1
         env:
           CIBW_BUILD: "${{ matrix.python-version}}-* "
           CIBW_BUILD_VERBOSITY: 3
+          # Install the built wheel into a test venv and exercise it before
+          # anything can reach the publish step. {project} is the project
+          # root; the smoke test imports only the installed package.
+          CIBW_TEST_COMMAND: python {project}/scripts/smoke_test.py
+          CIBW_ARCHS_LINUX: aarch64
+          CIBW_SKIP: "cp27-* cp35-* *-win32 pp* *-musllinux*"
+          CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/${{ matrix.manylinux }}_aarch64:2026.05.07-1
+
+      - name: Build wheels
+        if: matrix.python-version != 'cp38'
+        uses: pypa/cibuildwheel@v4.3.2
+        env:
+          CIBW_BUILD: "${{ matrix.python-version}}-* "
+          CIBW_BUILD_VERBOSITY: 3
+          # Install the built wheel into a test venv and exercise it before
+          # anything can reach the publish step. {project} is the project
+          # root; the smoke test imports only the installed package.
+          CIBW_TEST_COMMAND: python {project}/scripts/smoke_test.py
           CIBW_ARCHS_LINUX: aarch64
           CIBW_SKIP: "cp27-* cp35-* *-win32 pp* *-musllinux*"
           CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/${{ matrix.manylinux }}_aarch64
@@ -58,4 +83,4 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install wheel twine==5.0.0 setuptools
 
-          twine upload ./wheelhouse/*.whl
+          twine upload --skip-existing ./wheelhouse/*.whl

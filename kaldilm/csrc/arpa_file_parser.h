@@ -13,6 +13,7 @@
 #include <sstream>
 
 #include "fst/symbol-table.h"
+#include "kaldilm/csrc/kaldilm-types.h"
 
 namespace kaldilm {
 

@@ -1,0 +1,273 @@
+name: test-pip-install
+
+on:
+  push:
+    branches:
+      - master
+      - wheel-android
+  workflow_dispatch:
+
+concurrency:
+  group: test-pip-install-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test_pip_install:
+    if: github.repository_owner == 'csukuangfj' || github.repository_owner == 'k2-fsa'
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} ${{ matrix.python-version }} ${{ matrix.architecture || ((contains(matrix.os, 'arm') || matrix.os == 'macos-14' || matrix.os == 'macos-latest') && 'arm64' || 'x64') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # These install from PyPI, so they verify the wheels we actually
+        # publish. See https://github.com/actions/runner-images
+        include:
+          # Linux x64
+          - os: ubuntu-latest
+            python-version: "3.8"
+          - os: ubuntu-latest
+            python-version: "3.9"
+          - os: ubuntu-latest
+            python-version: "3.10"
+          - os: ubuntu-latest
+            python-version: "3.11"
+          - os: ubuntu-latest
+            python-version: "3.12"
+          - os: ubuntu-latest
+            python-version: "3.13"
+          - os: ubuntu-latest
+            python-version: "3.14"
+          - os: ubuntu-latest
+            python-version: "3.15"
+
+          # Linux arm64
+          - os: ubuntu-24.04-arm
+            python-version: "3.8"
+          - os: ubuntu-24.04-arm
+            python-version: "3.9"
+          - os: ubuntu-24.04-arm
+            python-version: "3.10"
+          - os: ubuntu-24.04-arm
+            python-version: "3.11"
+          - os: ubuntu-24.04-arm
+            python-version: "3.12"
+          - os: ubuntu-24.04-arm
+            python-version: "3.13"
+          - os: ubuntu-24.04-arm
+            python-version: "3.14"
+          - os: ubuntu-24.04-arm
+            python-version: "3.15"
+
+          # macOS arm64
+          - os: macos-latest
+            python-version: "3.8"
+          - os: macos-latest
+            python-version: "3.9"
+          - os: macos-latest
+            python-version: "3.10"
+          - os: macos-latest
+            python-version: "3.11"
+          - os: macos-latest
+            python-version: "3.12"
+          - os: macos-latest
+            python-version: "3.13"
+          - os: macos-latest
+            python-version: "3.14"
+          - os: macos-latest
+            python-version: "3.15"
+
+          # macOS x64 -- we ship universal2 wheels, so they must work here too
+          - os: macos-15-intel
+            python-version: "3.8"
+          - os: macos-15-intel
+            python-version: "3.9"
+          - os: macos-15-intel
+            python-version: "3.10"
+          - os: macos-15-intel
+            python-version: "3.11"
+          - os: macos-15-intel
+            python-version: "3.12"
+          - os: macos-15-intel
+            python-version: "3.13"
+          - os: macos-15-intel
+            python-version: "3.14"
+          - os: macos-15-intel
+            python-version: "3.15"
+
+          # Windows x64
+          - os: windows-2022
+            python-version: "3.8"
+          - os: windows-2022
+            python-version: "3.9"
+          - os: windows-2022
+            python-version: "3.10"
+          - os: windows-2022
+            python-version: "3.11"
+          - os: windows-2022
+            python-version: "3.12"
+          - os: windows-2022
+            python-version: "3.13"
+          - os: windows-2022
+            python-version: "3.14"
+          - os: windows-2022
+            python-version: "3.15"
+
+          # Windows x86
+          - os: windows-2022
+            python-version: "3.8"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.9"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.10"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.11"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.12"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.13"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.14"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.15"
+            architecture: x86
+
+          # Windows arm64 -- CPython only has arm64 builds from 3.11 on
+          - os: windows-11-arm
+            python-version: "3.11"
+          - os: windows-11-arm
+            python-version: "3.12"
+          - os: windows-11-arm
+            python-version: "3.13"
+          - os: windows-11-arm
+            python-version: "3.14"
+          - os: windows-11-arm
+            python-version: "3.15"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.architecture || ((contains(matrix.os, 'arm') || matrix.os == 'macos-14' || matrix.os == 'macos-latest') && 'arm64' || 'x64') }}
+
+      - name: Install kaldilm
+        shell: bash
+        run: |
+          python3 -m pip install --verbose -U kaldilm
+
+      - name: Test kaldilm
+        shell: bash
+        run: |
+          python3 -c "import kaldilm; print(kaldilm.__file__)"
+          python3 -c "import kaldilm; print(kaldilm.arpa2fst)"
+
+          # Run from outside the source tree so `import kaldilm` resolves to
+          # site-packages, i.e. the wheel we just installed.
+          cd "$RUNNER_TEMP"
+          python3 "$GITHUB_WORKSPACE/scripts/smoke_test.py"
+
+  # The armv7l wheels cannot be installed on an arm64 host -- pip rejects the
+  # platform tag -- so run the install inside an armv7 container instead. The
+  # test image is deliberately newer than the build image: pip accepts a wheel
+  # built against an older manylinux baseline, but not a newer one.
+  test_pip_install_armv7l:
+    if: github.repository_owner == 'csukuangfj' || github.repository_owner == 'k2-fsa'
+    runs-on: ubuntu-24.04-arm
+    name: linux armv7l ${{ matrix.python-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Our armv7l wheels are cp39+ (the build image ships no 3.8), and these
+        # are the interpreter directories the manylinux images provide.
+        include:
+          - python-version: "3.9"
+            tag: cp39
+          - python-version: "3.10"
+            tag: cp310
+          - python-version: "3.11"
+            tag: cp311
+          - python-version: "3.12"
+            tag: cp312
+          - python-version: "3.13"
+            tag: cp313
+          - python-version: "3.14"
+            tag: cp314
+          - python-version: "3.15"
+            tag: cp315
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install and test inside an armv7 container
+        shell: bash
+        run: |
+          docker run --rm \
+            --platform linux/arm/v7 \
+            --volume ${{ github.workspace }}:/work \
+            quay.io/pypa/manylinux_2_35_armv7l \
+          bash -c '
+            set -e
+            export PATH=/opt/python/${{ matrix.tag }}-${{ matrix.tag }}/bin:$PATH
+            python -m pip install --verbose -U kaldilm
+
+            cd /
+            python /work/scripts/smoke_test.py
+          '
+
+  # Termux wheels carry an android_24_* platform tag, which only a Termux
+  # interpreter accepts -- so install them inside termux-docker. uv publishes
+  # no Android wheels at all (see PyPI), so this can only be exercised with pip.
+  test_pip_install_android:
+    if: github.repository_owner == 'csukuangfj' || github.repository_owner == 'k2-fsa'
+    runs-on: ${{ matrix.os }}
+    name: android termux ${{ matrix.abi }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - abi: aarch64
+            os: ubuntu-24.04-arm
+          - abi: arm
+            os: ubuntu-24.04-arm
+          - abi: x86_64
+            os: ubuntu-latest
+          - abi: i686
+            os: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install and test inside termux
+        shell: bash
+        run: |
+          docker run --rm \
+            --user 0:0 \
+            --volume ${{ github.workspace }}:/work \
+            termux/termux-docker:${{ matrix.abi }} \
+          bash -c '
+            set -e
+
+            apt update -y
+            apt install -y python python-pip libc++ clang
+
+            pip install --verbose -U kaldilm
+
+            # termux has no writable /tmp and / is not writable, so run from
+            # /work (the bind mount). sys.path[0] is the directory of the
+            # script itself (/work/scripts), so the installed wheel is what
+            # gets imported rather than the kaldilm/ directory in the repo.
+            cd /work
+            python3 /work/scripts/smoke_test.py
+          '
