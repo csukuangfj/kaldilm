@@ -9,6 +9,7 @@ import re
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 import setuptools
 from setuptools.command.build_ext import build_ext
@@ -33,50 +34,60 @@ class BuildExtension(build_ext):
 
         os.makedirs(self.build_lib, exist_ok=True)
 
+        # CMake installs into lib/ below this, so the extension ends up at
+        # kaldilm/lib/_kaldilm.<ext> in the wheel -- the same layout kaldifst
+        # uses. The install rules decide placement; nothing is copied by hand.
+        install_dir = Path(self.build_lib).resolve() / "kaldilm"
+
         cmake_args = os.environ.get("KALDILM_CMAKE_ARGS", "")
         make_args = os.environ.get("KALDILM_MAKE_ARGS", "")
         system_make_args = os.environ.get("MAKEFLAGS", "")
 
-        if cmake_args == "":
-            cmake_args = "-DCMAKE_BUILD_TYPE=Release"
+        # KALDILM_CMAKE_ARGS replaces the default rather than extending it, so
+        # only supply CMAKE_BUILD_TYPE when the caller has not. Otherwise any
+        # workflow that passes e.g. -A Win32 would silently build without
+        # optimisation.
+        if "CMAKE_BUILD_TYPE" not in cmake_args:
+            cmake_args += " -DCMAKE_BUILD_TYPE=Release "
+
+        extra_cmake_args = " -DKALDILM_BUILD_TESTS=OFF "
+        extra_cmake_args += f" -DCMAKE_INSTALL_PREFIX={install_dir} "
 
         if make_args == "" and system_make_args == "":
             print("For fast compilation, run:")
             print('export KALDILM_MAKE_ARGS="-j"; python setup.py install')
-            make_args = " -j4 "
-            print("Setting make_args to '-j4'")
+            make_args = " -j1" if is_windows() else " -j4 "
+            print(f"Setting make_args to '{make_args}'")
 
         if "PYTHON_EXECUTABLE" not in cmake_args:
             print(f"Setting PYTHON_EXECUTABLE to {sys.executable}")
             cmake_args += f" -DPYTHON_EXECUTABLE={sys.executable}"
 
+        cmake_args += extra_cmake_args
+
         if not is_windows():
-            ret = os.system(
-                f"cd {build_dir}; cmake {cmake_args} {cur_dir}; make -j _kaldilm"
-            )
+            build_cmd = f"""
+                cd {self.build_temp}
+
+                cmake {cmake_args} {cur_dir}
+
+                make {make_args} install
+            """
+            print(f"build command is:\n{build_cmd}")
+
+            ret = os.system(build_cmd)
             if ret != 0:
                 raise Exception(
                     "\nBuild kaldilm failed. Please check the error message.\n"
                     "You can ask for help by creating an issue on GitHub.\n"
                     "\nClick:\n    https://github.com/csukuangfj/kaldilm/issues/new\n"
                 )
-            lib_so = glob.glob(f"{build_dir}/lib/*.so*")
-            for so in lib_so:
-                print(f"Copying {so} to {self.build_lib}/")
-                shutil.copy(f"{so}", f"{self.build_lib}/")
-
-            # macos
-            # also need to copy *fst*.dylib
-            lib_so = glob.glob(f"{build_dir}/lib/*.dylib*")
-            for so in lib_so:
-                print(f"Copying {so} to {self.build_lib}/")
-                shutil.copy(f"{so}", f"{self.build_lib}/")
             return
-        # for windows
 
+        # for windows
         build_cmd = f"""
             cmake {cmake_args} -B {self.build_temp} -S {cur_dir}
-            cmake --build {self.build_temp} --target _kaldilm --config Release -- -m
+            cmake --build {self.build_temp} --target install --config Release -- -m
         """
         print(f"build command is:\n{build_cmd}")
 
@@ -84,22 +95,10 @@ class BuildExtension(build_ext):
         if ret != 0:
             raise Exception("Failed to build kaldilm")
         ret = os.system(
-            f"cmake --build {self.build_temp} --target _kaldilm --config Release -- -m"
+            f"cmake --build {self.build_temp} --target install --config Release -- -m"
         )
         if ret != 0:
             raise Exception("Failed to build kaldilm")
-
-        # bin/Release/_kaldilm.cp38-win_amd64.pyd
-        lib_so = glob.glob(f"{self.build_temp}/**/*.pyd", recursive=True)
-        for so in lib_so:
-            print(f"Copying {so} to {self.build_lib}/")
-            shutil.copy(f"{so}", f"{self.build_lib}/")
-
-        # lib/Release/{_kaldilm, openfst}.lib
-        lib_so = glob.glob(f"{self.build_temp}/**/*.lib", recursive=True)
-        for so in lib_so:
-            print(f"Copying {so} to {self.build_lib}/")
-            shutil.copy(f"{so}", f"{self.build_lib}/")
 
 
 def read_long_description():

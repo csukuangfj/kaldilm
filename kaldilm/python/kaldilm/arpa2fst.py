@@ -1,6 +1,6 @@
 # Copyright (c)  2020  Xiaomi Corporation (authors: Fangjun Kuang)
 
-import _kaldilm
+from kaldilm.lib import _kaldilm
 
 
 def arpa2fst(input_arpa: str,
