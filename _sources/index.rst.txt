@@ -8,6 +8,11 @@ Welcome to kaldilm's documentation!
 
 
 .. toctree::
+   :maxdepth: 2
+
+   ./pdf
+
+.. toctree::
    :maxdepth: 5
 
    tutorials/index
