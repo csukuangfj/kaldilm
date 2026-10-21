@@ -7,16 +7,6 @@ Python wrapper for kaldi's [arpa2fst][1].
 
 # Installation
 
-`kaldilm` can be installed using either `conda` or `pip`.
-
-## Using conda
-
-```
-conda install -c k2-fsa -c conda-forge kaldilm
-```
-
-## Using pip
-
 ```bash
 pip install kaldilm
 ```

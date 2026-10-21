@@ -57,7 +57,7 @@ jobs:
             makejobs: "-j$(nproc)"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build wheel with the Termux toolchain
         shell: bash
@@ -107,7 +107,7 @@ jobs:
           ls -lh ./dist/
           unzip -l ./dist/*.whl
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheel-android-${{ matrix.abi }}
           path: ./dist/*.whl
@@ -150,7 +150,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: wheel-android-*
           path: /tmp/wheels

@@ -154,7 +154,7 @@ jobs:
             python-version: "3.15"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7
@@ -208,7 +208,7 @@ jobs:
             tag: cp315
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install and test inside an armv7 container
         shell: bash
@@ -247,7 +247,7 @@ jobs:
             os: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install and test inside termux
         shell: bash
