@@ -154,7 +154,7 @@ jobs:
             python-version: "3.15"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # setup-uv has no architecture input, so the interpreter comes from
       # setup-python (which does) and is handed to uv explicitly. Otherwise the
@@ -167,7 +167,7 @@ jobs:
           architecture: ${{ matrix.architecture || ((contains(matrix.os, 'arm') || matrix.os == 'macos-14' || matrix.os == 'macos-latest') && 'arm64' || 'x64') }}
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v10.3.0
 
       - name: Create virtual environment
         shell: bash
@@ -220,7 +220,7 @@ jobs:
             tag: cp315
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install and test inside an armv7 container
         shell: bash

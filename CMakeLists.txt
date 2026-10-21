@@ -19,7 +19,6 @@ cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
 project(kaldilm CXX)
 
-# also change scripts/conda/kaldilm/meta.yaml
 set(kaldilm_VERSION "1.15.5")
 
 # Disable warning about
