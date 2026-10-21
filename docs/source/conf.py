@@ -117,5 +117,13 @@ rst_epilog = """
 latex_engine = "xelatex"
 latex_use_xindy = False
 latex_elements = {
-    "preamble": "\\usepackage[UTF8]{ctex}\n",
+    "preamble": (
+        "\\usepackage[UTF8]{ctex}\n"
+        # tutorials/arpa-format.rst is written against MathJax, which accepts
+        # \lt and \gt as aliases for < and >. LaTeX has no such macros, so the
+        # PDF build would die with "Undefined control sequence". Provide them
+        # here instead of rewriting the math in the sources.
+        "\\providecommand{\\lt}{<}\n"
+        "\\providecommand{\\gt}{>}\n"
+    ),
 }
