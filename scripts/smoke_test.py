@@ -18,6 +18,18 @@ import tempfile
 
 import kaldilm
 
+
+def scratch_parent():
+    """Return a writable directory for scratch files.
+
+    Termux has no /tmp and its / is read-only, so the usual temp locations are
+    not available there. Try them in order and fall back to the cwd.
+    """
+    for candidate in (os.environ.get("TMPDIR"), "/tmp", "/var/tmp", os.getcwd()):
+        if candidate and os.path.isdir(candidate) and os.access(candidate, os.W_OK):
+            return candidate
+    raise RuntimeError("no writable scratch directory found")
+
 # A minimal but complete ARPA model. It must contain both the begin- and
 # end-of-sentence symbols (<s> and </s>), otherwise ArpaLmCompiler::Check()
 # rejects it. Fields are tab-separated and sections are marked with
@@ -47,7 +59,7 @@ def main() -> int:
     print("platform:", platform.platform())
     print("machine:", platform.machine())
 
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(dir=scratch_parent()) as tmp:
         arpa_path = os.path.join(tmp, "input.arpa")
         fst_path = os.path.join(tmp, "out.fst")
         with open(arpa_path, "w", encoding="utf-8") as f:

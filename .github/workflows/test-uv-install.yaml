@@ -61,7 +61,7 @@ jobs:
           - os: ubuntu-24.04-arm
             python-version: "3.15"
 
-          # macOS arm64 (we ship universal2 wheels, so they also work on x64)
+          # macOS arm64
           - os: macos-latest
             python-version: "3.8"
           - os: macos-latest
@@ -77,6 +77,24 @@ jobs:
           - os: macos-latest
             python-version: "3.14"
           - os: macos-latest
+            python-version: "3.15"
+
+          # macOS x64 -- we ship universal2 wheels, so they must work here too
+          - os: macos-15-intel
+            python-version: "3.8"
+          - os: macos-15-intel
+            python-version: "3.9"
+          - os: macos-15-intel
+            python-version: "3.10"
+          - os: macos-15-intel
+            python-version: "3.11"
+          - os: macos-15-intel
+            python-version: "3.12"
+          - os: macos-15-intel
+            python-version: "3.13"
+          - os: macos-15-intel
+            python-version: "3.14"
+          - os: macos-15-intel
             python-version: "3.15"
 
           # Windows x64
@@ -97,6 +115,32 @@ jobs:
           - os: windows-2022
             python-version: "3.15"
 
+          # Windows x86
+          - os: windows-2022
+            python-version: "3.8"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.9"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.10"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.11"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.12"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.13"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.14"
+            architecture: x86
+          - os: windows-2022
+            python-version: "3.15"
+            architecture: x86
+
           # Windows arm64 -- CPython only has arm64 builds from 3.11 on
           - os: windows-11-arm
             python-version: "3.11"
@@ -112,15 +156,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v4
+      # setup-uv has no architecture input, so the interpreter comes from
+      # setup-python (which does) and is handed to uv explicitly. Otherwise the
+      # Windows x86 entries would silently install an x64 interpreter and test
+      # the wrong wheel.
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.architecture || ((contains(matrix.os, 'arm') || matrix.os == 'macos-14' || matrix.os == 'macos-latest') && 'arm64' || 'x64') }}
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
 
       - name: Create virtual environment
         shell: bash
         run: |
-          uv venv
+          uv venv --python "$(python3 -c 'import sys; print(sys.executable)')"
 
       - name: Install kaldilm
         shell: bash
@@ -135,3 +187,56 @@ jobs:
         shell: bash
         run: |
           uv run python scripts/smoke_test.py
+
+  # The armv7l wheels cannot be installed on an arm64 host -- pip rejects the
+  # platform tag -- so run the install inside an armv7 container instead. uv
+  # publishes manylinux_2_17_armv7l wheels, so it can be bootstrapped there
+  # with plain pip. The test image is deliberately newer than the build image:
+  # pip accepts a wheel built against an older manylinux baseline, but not a
+  # newer one.
+  test_uv_install_armv7l:
+    if: github.repository_owner == 'csukuangfj' || github.repository_owner == 'k2-fsa'
+    runs-on: ubuntu-24.04-arm
+    name: linux armv7l ${{ matrix.python-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Our armv7l wheels are cp39+ (the build image ships no 3.8), and these
+        # are the interpreter directories the manylinux images provide.
+        include:
+          - python-version: "3.9"
+            tag: cp39
+          - python-version: "3.10"
+            tag: cp310
+          - python-version: "3.11"
+            tag: cp311
+          - python-version: "3.12"
+            tag: cp312
+          - python-version: "3.13"
+            tag: cp313
+          - python-version: "3.14"
+            tag: cp314
+          - python-version: "3.15"
+            tag: cp315
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install and test inside an armv7 container
+        shell: bash
+        run: |
+          docker run --rm \
+            --platform linux/arm/v7 \
+            --volume ${{ github.workspace }}:/work \
+            quay.io/pypa/manylinux_2_35_armv7l \
+          bash -c '
+            set -e
+            export PATH=/opt/python/${{ matrix.tag }}-${{ matrix.tag }}/bin:$PATH
+
+            python -m pip install --verbose uv
+            cd /work
+            uv venv
+            uv pip install --verbose -U kaldilm
+
+            uv run python scripts/smoke_test.py
+          '
